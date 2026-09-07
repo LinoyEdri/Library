@@ -346,14 +346,14 @@ A book may contain:
 
 ### 7.1 Book Permissions
 
-| Action | Admin | Librarian | Member |
-| --- | --- | --- | --- |
-| View books | Yes | Yes | Yes |
-| View book details | Yes | Yes | Yes |
-| Create books | Yes | Yes | No |
-| Edit books | Yes | Yes | No |
-| Disable books | Yes | No | No |
-| Reactivate books | Yes | No | No |
+| Action            | Admin | Librarian | Member |
+| ----------------- | ----- | --------- | ------ |
+| View books        | Yes   | Yes       | Yes    |
+| View book details | Yes   | Yes       | Yes    |
+| Create books      | Yes   | Yes       | No     |
+| Edit books        | Yes   | Yes       | No     |
+| Disable books     | Yes   | No        | No     |
+| Reactivate books  | Yes   | No        | No     |
 
 ### 7.2 Book Rules
 
@@ -424,14 +424,14 @@ Members are library users who can borrow physical book copies.
 
 ### 9.1 Member Permissions
 
-| Action | Admin | Librarian | Member |
-| --- | --- | --- | --- |
-| View member list | Yes | Yes | No |
-| View member details | Yes | Yes | Own profile only |
-| Create members | Yes | Yes | No |
-| Edit members | Yes | No | Own permitted profile fields only |
-| Disable members | Yes | No | No |
-| Reactivate members | Yes | No | No |
+| Action              | Admin | Librarian | Member                            |
+| ------------------- | ----- | --------- | --------------------------------- |
+| View member list    | Yes   | Yes       | No                                |
+| View member details | Yes   | Yes       | Own profile only                  |
+| Create members      | Yes   | Yes       | No                                |
+| Edit members        | Yes   | No        | Own permitted profile fields only |
+| Disable members     | Yes   | No        | No                                |
+| Reactivate members  | Yes   | No        | No                                |
 
 ### 9.2 Member Rules
 
@@ -484,15 +484,15 @@ CANCELLED
 
 ### 10.2 Loan Permissions
 
-| Action | Admin | Librarian | Member |
-| --- | --- | --- | --- |
-| View all loans | Yes | Yes | No |
-| View own loans | Yes | Yes | Yes |
-| Create loans | Yes | Yes | No |
-| Request return | No | No | Yes |
-| Confirm return | Yes | Yes | No |
-| Cancel loans | Yes | Yes, if permitted by workflow | No |
-| View overdue loans | Yes | Yes | Own loans only |
+| Action             | Admin | Librarian                     | Member         |
+| ------------------ | ----- | ----------------------------- | -------------- |
+| View all loans     | Yes   | Yes                           | No             |
+| View own loans     | Yes   | Yes                           | Yes            |
+| Create loans       | Yes   | Yes                           | No             |
+| Request return     | No    | No                            | Yes            |
+| Confirm return     | Yes   | Yes                           | No             |
+| Cancel loans       | Yes   | Yes, if permitted by workflow | No             |
+| View overdue loans | Yes   | Yes                           | Own loans only |
 
 ### 10.3 Loan Rules
 
@@ -639,14 +639,14 @@ Audit-log records must not be modified or deleted through the normal application
 
 ### 15.1 Audit Log Access
 
-| Action | Admin | Librarian | Member |
-| --- | --- | --- | --- |
-| View audit logs | Yes | No | No |
-| Search audit logs | Yes | No | No |
-| Filter audit logs | Yes | No | No |
-| Create audit records through actions | Yes | Yes | Yes, when applicable |
-| Edit audit logs | No | No | No |
-| Delete audit logs | No | No | No |
+| Action                               | Admin | Librarian | Member               |
+| ------------------------------------ | ----- | --------- | -------------------- |
+| View audit logs                      | Yes   | No        | No                   |
+| Search audit logs                    | Yes   | No        | No                   |
+| Filter audit logs                    | Yes   | No        | No                   |
+| Create audit records through actions | Yes   | Yes       | Yes, when applicable |
+| Edit audit logs                      | No    | No        | No                   |
+| Delete audit logs                    | No    | No        | No                   |
 
 Librarian actions must still be recorded even though Librarians cannot view audit logs.
 
@@ -985,19 +985,19 @@ Future features must not weaken the existing authorization, data-integrity, or a
 
 The system must use the following terminology consistently:
 
-| Term | Meaning |
-| --- | --- |
-| Book | General bibliographic record representing a title |
-| Book Copy | A specific physical copy of a book |
-| User | An authenticated system account |
-| Member | A person who can borrow library books |
-| Loan | A record connecting a Member to a physical Book Copy |
-| Request Return | Action performed by a Member |
-| Confirm Return | Action performed by an Admin or Librarian |
-| Disable | Deactivate a record without deleting it |
-| Reactivate | Restore a disabled record |
-| Overdue | A loan past its due date and not yet returned |
-| Audit Log | Append-only record of important system actions |
+| Term           | Meaning                                              |
+| -------------- | ---------------------------------------------------- |
+| Book           | General bibliographic record representing a title    |
+| Book Copy      | A specific physical copy of a book                   |
+| User           | An authenticated system account                      |
+| Member         | A person who can borrow library books                |
+| Loan           | A record connecting a Member to a physical Book Copy |
+| Request Return | Action performed by a Member                         |
+| Confirm Return | Action performed by an Admin or Librarian            |
+| Disable        | Deactivate a record without deleting it              |
+| Reactivate     | Restore a disabled record                            |
+| Overdue        | A loan past its due date and not yet returned        |
+| Audit Log      | Append-only record of important system actions       |
 
 ---
 
@@ -1035,9 +1035,9 @@ Development is organized into five phases. Each phase builds on the previous one
 
 Progress legend:
 
-| Mark | Meaning |
-| --- | --- |
-| `[x]` | Completed |
+| Mark  | Meaning     |
+| ----- | ----------- |
+| `[x]` | Completed   |
 | `[~]` | In progress |
 | `[ ]` | Not started |
 
@@ -1046,19 +1046,19 @@ Progress legend:
 - `[x]` **Define the System Requirements** — Define the user roles, permissions, pages, workflows, and business rules.
 - `[x]` **Define User Roles** — Define the differences between the Admin, Librarian, and Member roles.
 - `[x]` **Create the Repository** — Create a Git repository and establish a monorepo structure containing the Frontend, Backend, and shared packages.
-- `[ ]` **Configure the Development Environment** — Install and configure Node.js, TypeScript, a package manager, ESLint, Prettier, and the required development tools.
-- `[ ]` **Define the Project Structure** — Create organized folders for components, pages, routes, services, controllers, middleware, utilities, and shared types.
+- `[x]` **Configure the Development Environment** — Install and configure Node.js, TypeScript, a package manager, ESLint, Prettier, and the required development tools.
+- `[x]` **Define the Project Structure** — Create organized folders for components, pages, routes, services, controllers, middleware, utilities, and shared types.
 - `[ ]` **Set Up the Local Database** — Install PostgreSQL locally and create a dedicated database for the system.
 - `[ ]` **Configure Prisma** — Connect Prisma to PostgreSQL, create the database schema, run the initial migration, and add basic seed data.
 - `[ ]` **Design the Data Models** — Define models for users, members, books, loans, return requests, and audit logs.
-- `[ ]` **Create the Backend Server** — Build the Node.js and Express server with routing, error handling, and logging.
+- `[~]` **Create the Backend Server** — Build the Node.js and Express server with routing, error handling, and logging.
 - `[ ]` **Document the API** — Add Swagger or OpenAPI documentation for the backend API endpoints.
 
 ### 25.2 Phase 2: Frontend and Authentication
 
 - `[ ]` **Create the Frontend Application** — Set up a React application using Vite and TypeScript.
 - `[ ]` **Define the Design System** — Configure the visual theme using an ivory background, deep navy, forest green, and muted gold.
-- `[ ]` **Configure RTL Support** — Configure the entire application for right-to-left Hebrew layout and adapt Material UI to RTL.
+- `[~]` **Configure RTL Support** — Configure the entire application for right-to-left Hebrew layout and adapt Material UI to RTL.
 - `[ ]` **Configure Typography** — Add the Heebo font and define the required font sizes, weights, spacing, and text styles.
 - `[ ]` **Build the Application Layout** — Create the header, navigation menu, content area, breadcrumbs, notifications, and responsive layout.
 - `[ ]` **Implement Registration and Login** — Create the Login, Register, Forgot Password, and Reset Password pages.
@@ -1110,17 +1110,17 @@ Progress legend:
 
 ### 25.6 Recommended Local Setup
 
-| Component | Purpose |
-| --- | --- |
-| PostgreSQL | Local database |
-| Backend | Local Node.js and Express API server |
-| Frontend | Local React application |
-| Prisma Studio | Tool for viewing and managing the database during development |
-| Git | Version control and source-code backup |
-| README | Installation, configuration, execution, testing, and database reset instructions |
+| Component     | Purpose                                                                          |
+| ------------- | -------------------------------------------------------------------------------- |
+| PostgreSQL    | Local database                                                                   |
+| Backend       | Local Node.js and Express API server                                             |
+| Frontend      | Local React application                                                          |
+| Prisma Studio | Tool for viewing and managing the database during development                    |
+| Git           | Version control and source-code backup                                           |
+| README        | Installation, configuration, execution, testing, and database reset instructions |
 
 ### 25.7 Current Status
 
-**Completed:** The requirements stage. The system requirements, user roles, permissions, workflows, and business rules are defined in sections 1–24 of this document.
+**Completed:** The requirements stage (sections 1–24 of this document) and the repository and tooling foundation — an npm-workspaces monorepo with `shared`, `backend`, and `frontend` packages, a single lockfile, TypeScript, ESLint and Prettier wired across all three, an Express server with logging plus 404 and error handling, and a Vite dev server that proxies `/api` to the backend.
 
-**Next up:** The remaining Phase 1 infrastructure work — establishing the monorepo structure, configuring the development environment and project structure, setting up PostgreSQL with Prisma, and building the backend server.
+**Next up:** The remaining Phase 1 infrastructure work — installing PostgreSQL locally, defining the Prisma schema and data models, running the initial migration with seed data, fleshing out the backend folder structure (routes, controllers, services, middleware), and adding API documentation.
