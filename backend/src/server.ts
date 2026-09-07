@@ -1,20 +1,27 @@
-import express from "express";
+// backend/src/server.ts
+import express from 'express';
+import prisma from './prisma/prisma.ts'; // Import your custom client
+import { backendPort, backendUrl } from './config/env.ts';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
-// Middleware
-app.use(express.json());
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
 
-// Health-check route
-app.get("/api/health", (_req, res) => {
-  res.status(200).json({
-    status: "ok",
-    message: "Library backend is running",
+const server = app.listen(backendPort, () => {
+  console.log(`Server running at ${backendUrl}`);
+});
+
+// Add the shutdown logic here
+const shutdown = async () => {
+  console.log("Shutting down gracefully...");
+  await prisma.$disconnect();
+  server.close(() => {
+    console.log("Process terminated.");
+    process.exit(0);
   });
-});
+};
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Backend server running at http://localhost:${PORT}`);
-});
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
