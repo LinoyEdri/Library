@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+build/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Test output
+playwright-report/
+test-results/
+
+# Tool caches
+.eslintcache
+
+# Logs
+*.log
+logs/
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Prisma local artifacts (matches at any depth, e.g. backend/prisma/)
+**/prisma/*.db
+**/prisma/*.db-journal
