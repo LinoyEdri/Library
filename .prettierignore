@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+coverage
+.vite
+
+# Lockfiles are generated; formatting them creates enormous diffs.
+package-lock.json
+*.lock
