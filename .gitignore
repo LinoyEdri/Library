@@ -36,3 +36,4 @@ Thumbs.db
 # Prisma local artifacts (matches at any depth, e.g. backend/prisma/)
 **/prisma/*.db
 **/prisma/*.db-journal
+node_modules
