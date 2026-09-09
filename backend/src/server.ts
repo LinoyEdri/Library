@@ -2,6 +2,7 @@
 import express from 'express';
 import prisma from './prisma/prisma.ts'; // Import your custom client
 import { backendPort, backendUrl } from './config/env.ts';
+import { logger } from './logger/logger.ts';
 
 const app = express();
 
@@ -10,18 +11,25 @@ app.get('/api/health', (req, res) => {
 });
 
 const server = app.listen(backendPort, () => {
-  console.log(`Server running at ${backendUrl}`);
+  logger.info(`Server running at ${backendUrl}`);
+});
+
+server.on('error', (err: any) => {
+  logger.fatal({ error: err }, `Failed to start server on port ${backendPort}`);
+
+  process.exit(1); // Force terminate the process safely
 });
 
 // Add the shutdown logic here
 const shutdown = async () => {
-  console.log("Shutting down gracefully...");
+  logger.info('Shutting down gracefully...');
   await prisma.$disconnect();
+
   server.close(() => {
-    console.log("Process terminated.");
+    logger.info('Process terminated.');
     process.exit(0);
   });
 };
 
-process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
