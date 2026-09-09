@@ -96,8 +96,6 @@ Librarians cannot:
 
 - Disable books
 - Reactivate books
-- Edit existing members
-- Disable members
 - Manage users or roles
 - View audit logs
 - Manage system settings
