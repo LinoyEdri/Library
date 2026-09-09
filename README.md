@@ -37,12 +37,13 @@ The system must prioritize data integrity, clear permissions, usability, and sec
 
 ## 3. User Roles
 
-The system has three roles:
+The system has four roles:
 
 ```
 ADMIN
 LIBRARIAN
 MEMBER
+VIEWER
 ```
 
 ### 3.1 Admin
@@ -54,6 +55,10 @@ Admins can:
 - View the full system dashboard
 - Manage users and roles
 - Create, view, edit, disable, and reactivate books
+- View, create, edit, disable, reactivate categories
+- View, create, edit, disable, reactivate authors
+- View, create, edit, disable, reactivate publishers
+- View, create, edit addresses
 - Manage physical book copies
 - Create, view, edit, disable, and reactivate members
 - View and manage loans
@@ -73,11 +78,14 @@ Librarians can:
 - View the operational dashboard
 - View books and book details
 - Create books
+- View authors
+- View categories
+- View publishers
 - Edit book information
 - View physical book copies
 - Create physical book copies, if permitted by the implementation
-- View members and member details
-- Create members
+- View and edit members and member details
+- Create, disable and reactivate members
 - View loans
 - Create loans
 - Confirm and process physical returns
@@ -88,9 +96,6 @@ Librarians cannot:
 
 - Disable books
 - Reactivate books
-- Edit existing members
-- Disable members
-- Reactivate members
 - Manage users or roles
 - View audit logs
 - Manage system settings
@@ -124,6 +129,24 @@ Members cannot:
 - Access system settings
 - Join a waiting list
 
+### 3.4 Viewer
+
+Viewers can:
+
+- Browse books
+- View book details
+- View authors
+- View categories
+- View publishers
+- View profile
+
+Viewers cannot:
+
+- Cannot view loans
+- Cannot create loans
+- Cannot request returns
+- Cannot manage members
+
 ---
 
 ## 4. Authentication and Accounts
@@ -132,17 +155,26 @@ Members cannot:
 
 A **User** is an authenticated account that can log in to the system.
 
-A User record may contain:
+A User record contains:
 
 - User ID
-- Name
-- Email or username
+- First name
+- Last name
+- Email
 - Password hash
+- Phone number
+- Address (a reference to an Address record)
 - Assigned role
 - Account status
+- Last login date
 - Creation date
 - Updated date
-- Last login date
+- Disabled date
+- Disabled-by user
+- Created-by user
+
+The created-by user is empty for the first seeded administrator and for anyone
+who registers publicly, because in those cases no other user acted.
 
 Passwords must never be stored as plain text.
 
@@ -150,15 +182,26 @@ Passwords must never be stored as plain text.
 
 A **Member** is a person who can borrow books from the library.
 
-A Member record may contain:
+A Member record contains:
 
 - Member ID
 - Linked user account
-- Full name
-- Contact information
 - Membership status
 - Registration date
-- Additional library information
+- Updated date
+- Disabled date
+- Disabled-by user
+- Registered-by user
+
+Personal details such as name, email, phone number and address live on the User
+record, not the Member record. The Member record holds only the borrowing
+relationship and its lifecycle.
+
+The link is one-to-one: an account has at most one Member record. Staff accounts
+that never borrow have none at all.
+
+The registered-by user is empty when a member signs up publicly, and holds the
+staff user's identifier when a Librarian or Admin created the member.
 
 User accounts and Member records should be logically separated, even when they belong to the same person.
 
@@ -217,6 +260,26 @@ A disabled account:
 
 Only an Admin can disable or reactivate user accounts.
 
+### 4.7 Addresses
+
+An **Address** is a postal address belonging to a user.
+
+An Address record contains:
+
+- Address ID
+- Street
+- House number
+- Apartment or unit
+- City
+- Postal code
+- Country
+
+House number and postal code are stored as text, not numbers, because they may
+contain letters and leading zeros.
+
+An address has no status or audit columns of its own. Its lifecycle follows the
+user that owns it. Several users may share one address.
+
 ---
 
 ## 5. Authorization and Security
@@ -271,7 +334,7 @@ The word "Remove" must not represent permanent deletion.
 
 The preferred operation is:
 
-```text
+```
 Disable
 ```
 
@@ -329,31 +392,42 @@ A disabled physical copy:
 
 A **Book** represents the general bibliographic information for a title.
 
-A book may contain:
+A book contains:
 
 - Book ID
 - Title
-- Author
 - ISBN
-- Publisher
+- Publisher (a reference to a Publisher record)
 - Publication year
 - Description
-- Category
-- Cover image
+- Language
+- Cover image URL
 - General status
 - Creation date
 - Updated date
+- Disabled date
+- Disabled-by user
+- Created-by user
+
+A book is linked to **one or more Authors** and to **one or more Categories**.
+Those are separate records rather than plain text fields, so the same author or
+category can be shared by many books and corrected in one place. See section 7.3.
+
+The ISBN is optional, because older titles predate the standard, but no two
+books may share one. It is stored as text: ISBNs carry leading zeros, and an
+ISBN-10 check digit can be the letter X.
 
 ### 7.1 Book Permissions
 
-| Action            | Admin | Librarian | Member |
-| ----------------- | ----- | --------- | ------ |
-| View books        | Yes   | Yes       | Yes    |
-| View book details | Yes   | Yes       | Yes    |
-| Create books      | Yes   | Yes       | No     |
-| Edit books        | Yes   | Yes       | No     |
-| Disable books     | Yes   | No        | No     |
-| Reactivate books  | Yes   | No        | No     |
+| Action                                  | Admin | Librarian | Member | Viewer |
+| --------------------------------------- | ----- | --------- | ------ | ------ |
+| View books                              | Yes   | Yes       | Yes    | Yes    |
+| View book details                       | Yes   | Yes       | Yes    | Yes    |
+| View authors, publishers and categories | Yes   | Yes       | Yes    | Yes    |
+| Create books                            | Yes   | Yes       | No     | No     |
+| Edit books                              | Yes   | Yes       | No     | No     |
+| Disable books                           | Yes   | No        | No     | No     |
+| Reactivate books                        | Yes   | No        | No     | No     |
 
 ### 7.2 Book Rules
 
@@ -363,6 +437,52 @@ A book may contain:
 - A book is considered available when at least one eligible physical copy is available.
 - Book creation, editing, disabling, and reactivation must follow role restrictions.
 - Important book actions must be recorded in the audit log.
+
+### 7.3 Authors, Publishers and Categories
+
+Authors, publishers and categories are records in their own right, not text
+fields on a book.
+
+An **Author** contains 
+- author ID
+- first name
+- last name
+- biography
+- status,
+and the usual creation, update, disable and created-by fields.
+
+A **Publisher** contains 
+- publisher ID 
+- name
+- description
+- status
+and the same lifecycle fields. Publisher names are unique.
+
+A **Category** contains 
+- category ID
+- name
+- status
+and the same lifecycle fields. Category names are unique.
+
+All three follow the same rules as books:
+
+- They are disabled, never deleted.
+- They record who created them and who disabled them.
+- Their creation, editing, disabling and reactivation must be recorded in the
+  audit log.
+
+### 7.4 Book Relationships
+
+A book links to its authors and its categories through join records:
+
+- **Book–Author** links one book to one author, and marks whether that author is
+  the primary author of the book. A book may have several authors; an author may
+  have written several books.
+- **Book–Category** links one book to one category. A book may be filed under
+  several categories; a category may contain many books.
+
+The same author cannot be attached to the same book twice, and the same category
+cannot be attached to the same book twice.
 
 ---
 
@@ -380,16 +500,23 @@ A **BookCopy** represents one specific physical item.
 
 ### 8.2 Book Copy Information
 
-A physical copy may contain:
+A physical copy contains:
 
 - Copy ID
 - Associated book ID
 - Barcode or inventory number
 - Copy status
 - Acquisition date
-- Notes
-- Creation date
 - Updated date
+- Disabled date
+- Disabled-by user
+- Created-by user
+
+The barcode is unique across the whole library and is stored as text, because
+barcodes carry leading zeros and may include a non-numeric prefix.
+
+The acquisition date records when the copy entered the library and serves as its
+creation date.
 
 ### 8.3 Physical Copy Statuses
 
@@ -424,14 +551,18 @@ Members are library users who can borrow physical book copies.
 
 ### 9.1 Member Permissions
 
-| Action              | Admin | Librarian | Member                            |
-| ------------------- | ----- | --------- | --------------------------------- |
-| View member list    | Yes   | Yes       | No                                |
-| View member details | Yes   | Yes       | Own profile only                  |
-| Create members      | Yes   | Yes       | No                                |
-| Edit members        | Yes   | No        | Own permitted profile fields only |
-| Disable members     | Yes   | No        | No                                |
-| Reactivate members  | Yes   | No        | No                                |
+| Action              | Admin | Librarian | Member                            | Viewer |
+| ------------------- | ----- | --------- | --------------------------------- | ------ |
+| View member list    | Yes   | Yes       | No                                | No     |
+| View member details | Yes   | Yes       | Own profile only                  | No     |
+| Create members      | Yes   | Yes       | No                                | No     |
+| Edit members        | Yes   | No        | Own permitted profile fields only | No     |
+| Disable members     | Yes   | No        | No                                | No     |
+| Reactivate members  | Yes   | No        | No                                | No     |
+
+A Viewer has no Member record, so no row of the member list refers to them. A
+Viewer may still view and edit their own user profile, which is a separate
+record (section 4.1).
 
 ### 9.2 Member Rules
 
@@ -451,24 +582,36 @@ A loan connects:
 
 - One Member
 - One physical Book Copy
-- One checkout date
+- One creation date, which is the date the copy was checked out
 - One due date
 - One loan status
 
-A loan may contain:
+A loan contains:
 
 - Loan ID
 - Member ID
 - Book copy ID
-- Checkout date
-- Due date
-- Return date
 - Loan status
-- Created by user
+- Creation date (the checkout date)
+- Due date
+- Return-requested date
+- Return-request-cancelled date
+- Return date
+- Return-processed date
+- Created-by user
 - Return-processed-by user
-- Notes
-- Creation date
 - Updated date
+
+The return workflow is recorded as four separate timestamps rather than one,
+because a member may request a return, cancel the request, and request again.
+Each step keeps its own moment in time, so the full history survives.
+
+The due date has no default. The loan period is a policy decision, not a
+database one.
+
+The created-by user is always present: only Admins and Librarians create loans,
+so there is always a staff member accountable for it. The return-processed-by
+user stays empty until staff confirm the physical return.
 
 ### 10.1 Loan Statuses
 
@@ -484,15 +627,17 @@ CANCELLED
 
 ### 10.2 Loan Permissions
 
-| Action             | Admin | Librarian                     | Member         |
-| ------------------ | ----- | ----------------------------- | -------------- |
-| View all loans     | Yes   | Yes                           | No             |
-| View own loans     | Yes   | Yes                           | Yes            |
-| Create loans       | Yes   | Yes                           | No             |
-| Request return     | No    | No                            | Yes            |
-| Confirm return     | Yes   | Yes                           | No             |
-| Cancel loans       | Yes   | Yes, if permitted by workflow | No             |
-| View overdue loans | Yes   | Yes                           | Own loans only |
+| Action             | Admin | Librarian                     | Member         | Viewer |
+| ------------------ | ----- | ----------------------------- | -------------- | ------ |
+| View all loans     | Yes   | Yes                           | No             | No     |
+| View own loans     | Yes   | Yes                           | Yes            | No     |
+| Create loans       | Yes   | Yes                           | No             | No     |
+| Request return     | No    | No                            | Yes            | No     |
+| Confirm return     | Yes   | Yes                           | No             | No     |
+| Cancel loans       | Yes   | Yes, if permitted by workflow | No             | No     |
+| View overdue loans | Yes   | Yes                           | Own loans only | No     |
+
+A Viewer cannot borrow, so a Viewer has no loans to view.
 
 ### 10.3 Loan Rules
 
@@ -639,14 +784,14 @@ Audit-log records must not be modified or deleted through the normal application
 
 ### 15.1 Audit Log Access
 
-| Action                               | Admin | Librarian | Member               |
-| ------------------------------------ | ----- | --------- | -------------------- |
-| View audit logs                      | Yes   | No        | No                   |
-| Search audit logs                    | Yes   | No        | No                   |
-| Filter audit logs                    | Yes   | No        | No                   |
-| Create audit records through actions | Yes   | Yes       | Yes, when applicable |
-| Edit audit logs                      | No    | No        | No                   |
-| Delete audit logs                    | No    | No        | No                   |
+| Action                               | Admin | Librarian | Member               | Viewer               |
+| ------------------------------------ | ----- | --------- | -------------------- | -------------------- |
+| View audit logs                      | Yes   | No        | No                   | No                   |
+| Search audit logs                    | Yes   | No        | No                   | No                   |
+| Filter audit logs                    | Yes   | No        | No                   | No                   |
+| Create audit records through actions | Yes   | Yes       | Yes, when applicable | Yes, when applicable |
+| Edit audit logs                      | No    | No        | No                   | No                   |
+| Delete audit logs                    | No    | No        | No                   | No                   |
 
 Librarian actions must still be recorded even though Librarians cannot view audit logs.
 
@@ -654,7 +799,7 @@ Member actions may also be recorded, but Members cannot view audit logs.
 
 ### 15.2 Actions That Require Audit Logging
 
-The system should record actions such as:
+The system records actions such as:
 
 - User creation
 - User login and logout security events
@@ -681,7 +826,7 @@ The system should record actions such as:
 
 ### 15.3 Audit Entry Information
 
-An audit entry should include:
+An audit entry includes:
 
 - Audit entry ID
 - Action type
@@ -693,6 +838,20 @@ An audit entry should include:
 - Previous values, when applicable
 - New values, when applicable
 - Additional context, when applicable
+
+The acting user and their role are both required, so every recorded action has
+an accountable actor.
+
+The acting user's role is stored on the entry itself rather than read back from
+the user record. If someone's role changes later, the entry must still show what
+they were at the moment they acted.
+
+The affected record ID is not a foreign key. A single entry may refer to any
+entity type, and a database foreign key can only point at one table. The
+affected entity type and the affected record ID identify the target together.
+
+Previous values, new values and additional context are stored as structured JSON
+rather than plain text, so they can be queried later.
 
 ---
 
@@ -887,12 +1046,18 @@ Frontend hiding improves usability but does not replace backend authorization.
 
 The system must validate:
 
-- Required fields
-- Email or username format
-- Password requirements
+- Required fields, including text that is empty once trimmed
+- Email format
+- Password requirements, checked on the plain password before it is hashed
+- Phone number format
 - Duplicate ISBN values, when applicable
+- ISBN length and check digit
+- Publication year within a sensible range
+- Language against the list of accepted values
+- Cover image URL format
 - Duplicate copy identifiers
 - Duplicate user accounts
+- Duplicate publisher and category names
 - Duplicate member accounts, when applicable
 - Valid due dates
 - Physical-copy availability
@@ -900,6 +1065,14 @@ The system must validate:
 - Member status
 - Loan status transitions
 - User permissions
+
+The database enforces types, required fields, uniqueness, foreign keys and the
+allowed set of enumeration values. It cannot enforce formats, ranges or rules
+that span several fields, so those belong in validation at the API boundary.
+
+Note that a required text column rejects a missing value but accepts an empty or
+whitespace-only string, so every required text field needs a trimmed
+minimum-length check of its own.
 
 The system must display clear error messages in Hebrew.
 
@@ -985,19 +1158,23 @@ Future features must not weaken the existing authorization, data-integrity, or a
 
 The system must use the following terminology consistently:
 
-| Term           | Meaning                                              |
-| -------------- | ---------------------------------------------------- |
-| Book           | General bibliographic record representing a title    |
-| Book Copy      | A specific physical copy of a book                   |
-| User           | An authenticated system account                      |
-| Member         | A person who can borrow library books                |
-| Loan           | A record connecting a Member to a physical Book Copy |
-| Request Return | Action performed by a Member                         |
-| Confirm Return | Action performed by an Admin or Librarian            |
-| Disable        | Deactivate a record without deleting it              |
-| Reactivate     | Restore a disabled record                            |
-| Overdue        | A loan past its due date and not yet returned        |
-| Audit Log      | Append-only record of important system actions       |
+| Term           | Meaning                                                               |
+| -------------- | --------------------------------------------------------------------- |
+| Book           | General bibliographic record representing a title                     |
+| Book Copy      | A specific physical copy of a book                                    |
+| Author         | A person who wrote one or more books, stored as its own record        |
+| Publisher      | A publishing house, stored as its own record                          |
+| Category       | A subject heading a book can be filed under, stored as its own record |
+| Address        | A postal address belonging to a user                                  |
+| User           | An authenticated system account                                       |
+| Member         | A person who can borrow library books                                 |
+| Loan           | A record connecting a Member to a physical Book Copy                  |
+| Request Return | Action performed by a Member                                          |
+| Confirm Return | Action performed by an Admin or Librarian                             |
+| Disable        | Deactivate a record without deleting it                               |
+| Reactivate     | Restore a disabled record                                             |
+| Overdue        | A loan past its due date and not yet returned                         |
+| Audit Log      | Append-only record of important system actions                        |
 
 ---
 
@@ -1045,12 +1222,12 @@ Progress legend:
 
 - `[x]` **Define the System Requirements** — Define the user roles, permissions, pages, workflows, and business rules.
 - `[x]` **Define User Roles** — Define the differences between the Admin, Librarian, and Member roles.
-- `[x]` **Create the Repository** — Create a Git repository and establish a monorepo structure containing the Frontend, Backend, and shared packages.
+- `[x]` **Create the Repository** — Create a Git repository and establish an npm-workspaces monorepo containing the Backend and Frontend packages.
 - `[x]` **Configure the Development Environment** — Install and configure Node.js, TypeScript, a package manager, ESLint, Prettier, and the required development tools.
 - `[x]` **Define the Project Structure** — Create organized folders for components, pages, routes, services, controllers, middleware, utilities, and shared types.
-- `[ ]` **Set Up the Local Database** — Install PostgreSQL locally and create a dedicated database for the system.
-- `[ ]` **Configure Prisma** — Connect Prisma to PostgreSQL, create the database schema, run the initial migration, and add basic seed data.
-- `[ ]` **Design the Data Models** — Define models for users, members, books, loans, return requests, and audit logs.
+- `[x]` **Set Up the Local Database** — Install PostgreSQL locally and create a dedicated database for the system.
+- `[x]` **Configure Prisma** — Connect Prisma to PostgreSQL, create the database schema, run the initial migration, and add basic seed data.
+- `[x]` **Design the Data Models** — Define models for users, members, books, loans, return requests, and audit logs.
 - `[~]` **Create the Backend Server** — Build the Node.js and Express server with routing, error handling, and logging.
 - `[ ]` **Document the API** — Add Swagger or OpenAPI documentation for the backend API endpoints.
 
@@ -1121,6 +1298,15 @@ Progress legend:
 
 ### 25.7 Current Status
 
-**Completed:** The requirements stage (sections 1–24 of this document) and the repository and tooling foundation — an npm-workspaces monorepo with `shared`, `backend`, and `frontend` packages, a single lockfile, TypeScript, ESLint and Prettier wired across all three, an Express server with logging plus 404 and error handling, and a Vite dev server that proxies `/api` to the backend.
+**Completed:** The requirements stage (sections 1–24 of this document), the repository and tooling foundation, and the data layer.
 
-**Next up:** The remaining Phase 1 infrastructure work — installing PostgreSQL locally, defining the Prisma schema and data models, running the initial migration with seed data, fleshing out the backend folder structure (routes, controllers, services, middleware), and adding API documentation.
+The repository is an npm-workspaces monorepo with `backend` and `frontend` packages sharing a single lockfile, with TypeScript, ESLint and Prettier wired across both. The backend runs an Express server on port 3001; the Vite dev server runs on port 3000 and proxies `/api` to it, so the browser only ever talks to one origin.
+
+The data layer is complete: PostgreSQL locally, Prisma 7 connected through the `pg` driver adapter, twelve models and six enumerations covering every entity in sections 4 through 15, an applied initial migration, and a seed script that populates staff accounts, members, a catalogue and physical copies inside a single transaction.
+
+**Next up:** The remaining Phase 1 work — fleshing out the backend folder structure (routes, controllers, services, middleware) and adding API documentation. After that, Phase 2 begins with the design system, RTL layout and authentication.
+
+Two rules recorded here because the database cannot enforce them on its own:
+
+- A physical copy may have only one open loan at a time (section 10.3). This needs a partial unique index on the loan table, added by hand to a migration, because it cannot be expressed in the Prisma schema.
+- Audit entries must be append-only (section 15). The application must never expose an update or delete path for them.

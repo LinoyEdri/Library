@@ -5,3 +5,528 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+/// Roles a user account can hold (README section 3).
+enum Role {
+  ADMIN
+  LIBRARIAN
+  MEMBER
+  VIEWER
+}
+
+/// Lifecycle state of a record. Records are disabled, never deleted
+/// (README section 6).
+enum RecordStatus {
+  ACTIVE
+  DISABLED
+}
+
+/// Operational state of one physical copy (README section 8.3).
+/// Only AVAILABLE copies may be attached to a new loan.
+enum CopyStatus {
+  AVAILABLE
+  ON_LOAN
+  DISABLED
+  LOST
+  DAMAGED
+}
+
+/// Loan lifecycle (README section 10.1). Permitted transitions between these
+/// states are listed in README section 11.3 and enforced in the service layer.
+enum LoanStatus {
+  ACTIVE
+  RETURN_REQUESTED
+  RETURNED
+  OVERDUE
+  CANCELLED
+}
+
+/// The kind of record an audit entry refers to (README section 15.3).
+enum EntityType {
+  USER
+  MEMBER
+  ADDRESS
+  BOOK
+  BOOK_COPY
+  AUTHOR
+  PUBLISHER
+  CATEGORY
+  LOAN
+  SYSTEM_SETTING
+}
+
+/// Every action worth recording in the audit log (README section 15.2).
+enum ActionType {
+  // User accounts and security events
+  USER_CREATED
+  USER_UPDATED
+  USER_DISABLED
+  USER_REACTIVATED
+  USER_ROLE_CHANGED
+  USER_PASSWORD_CHANGED
+  USER_LOGIN_SUCCEEDED
+  USER_LOGIN_FAILED
+  USER_LOGOUT
+
+  // Members
+  MEMBER_CREATED
+  MEMBER_UPDATED
+  MEMBER_DISABLED
+  MEMBER_REACTIVATED
+
+  // Addresses
+  ADDRESS_UPDATED
+
+  // Authors
+  AUTHOR_CREATED
+  AUTHOR_UPDATED
+  AUTHOR_DISABLED
+  AUTHOR_REACTIVATED
+
+  // Publishers
+  PUBLISHER_CREATED
+  PUBLISHER_UPDATED
+  PUBLISHER_DISABLED
+  PUBLISHER_REACTIVATED
+
+  // Categories
+  CATEGORY_CREATED
+  CATEGORY_UPDATED
+  CATEGORY_DISABLED
+  CATEGORY_REACTIVATED
+
+  // Books
+  BOOK_CREATED
+  BOOK_UPDATED
+  BOOK_DISABLED
+  BOOK_REACTIVATED
+
+  // Physical copies
+  BOOK_COPY_CREATED
+  BOOK_COPY_UPDATED
+  BOOK_COPY_DISABLED
+  BOOK_COPY_REACTIVATED
+  BOOK_COPY_MARKED_LOST
+  BOOK_COPY_MARKED_DAMAGED
+
+  // Loans and returns
+  LOAN_CREATED
+  LOAN_UPDATED
+  LOAN_RETURN_REQUESTED
+  LOAN_RETURN_REQUEST_CANCELLED
+  LOAN_RETURN_PROCESSED
+  LOAN_CANCELLED
+  LOAN_MARKED_OVERDUE
+
+  // System settings (no model yet; see README section 17.3)
+  SYSTEM_SETTING_CREATED
+  SYSTEM_SETTING_UPDATED
+  SYSTEM_SETTING_DISABLED
+  SYSTEM_SETTING_REACTIVATED
+}
+
+/// A postal address. Owned by the user it belongs to, so it carries no
+/// status or audit columns of its own; its lifecycle follows the user.
+model Address {
+  id              String  @id @default(uuid(7))
+  street          String
+  houseNumber     String
+  apartmentOrUnit String
+  city            String
+  postalCode      String?
+  country         String  @default("IL")
+
+  /// Back-reference. Creates no column; it exists so you can query
+  /// address.users. Several users may share one address (a family).
+  users User[]
+}
+
+/// An authenticated account (README section 4.1). Kept separate from Member:
+/// User answers "who may log in and what may they do", Member answers
+/// "who may borrow books".
+model User {
+  id String @id @default(uuid(7))
+
+  firstName String
+  lastName  String
+
+  /// Unique across the system. Format validation (the "@") is not
+  /// expressible here and lives in Zod at the API boundary.
+  email String @unique
+
+  /// Never store a plaintext password (README section 4.1). The name of this
+  /// column is deliberate: it makes an accidental plaintext write obvious.
+  passwordHash String
+
+  phoneNumber String
+
+  addressId String
+  address   Address @relation(fields: [addressId], references: [id], onDelete: Restrict)
+
+  status RecordStatus @default(ACTIVE)
+  role   Role         @default(VIEWER)
+
+  lastLoginDate DateTime?
+  createdDate   DateTime  @default(now())
+  updatedDate   DateTime  @updatedAt
+  disabledDate  DateTime?
+
+  /// Who disabled this account. Null while the account is active, which is
+  /// exactly the business rule: only a disabled record has a disabler.
+  disabledByUserId String?
+  disabledBy       User?   @relation("UserDisabledBy", fields: [disabledByUserId], references: [id], onDelete: Restrict)
+  usersDisabled    User[]  @relation("UserDisabledBy")
+
+  /// Who created this account. Nullable on purpose: the seeded first admin
+  /// has no creator, and public self-registration (README section 4.3)
+  /// creates an account with nobody acting on the user's behalf.
+  createdByUserId String?
+  createdBy       User?   @relation("UserCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  usersCreated    User[]  @relation("UserCreatedBy")
+
+  /// The borrowing record for this account, if it has one. Singular and
+  /// optional because Member.userId is @unique: staff accounts have no
+  /// Member row, and no account can have two.
+  member Member? @relation("MemberUser")
+
+  /// Back-references for every record this user created or disabled.
+  /// Each pairs with a named relation on the other model.
+  membersRegistered  Member[]    @relation("MemberRegisteredBy")
+  membersDisabled    Member[]    @relation("MemberDisabledBy")
+  authorsCreated     Author[]    @relation("AuthorCreatedBy")
+  authorsDisabled    Author[]    @relation("AuthorDisabledBy")
+  publishersCreated  Publisher[] @relation("PublisherCreatedBy")
+  publishersDisabled Publisher[] @relation("PublisherDisabledBy")
+  categoriesCreated  Category[]  @relation("CategoryCreatedBy")
+  categoriesDisabled Category[]  @relation("CategoryDisabledBy")
+  booksCreated       Book[]      @relation("BookCreatedBy")
+  booksDisabled      Book[]      @relation("BookDisabledBy")
+  bookCopiesCreated  BookCopy[]  @relation("BookCopyCreatedBy")
+  bookCopiesDisabled BookCopy[]  @relation("BookCopyDisabledBy")
+  loansCreated       Loan[]      @relation("LoanCreatedBy")
+  loansReturnHandled Loan[]      @relation("LoanReturnProcessedBy")
+  auditLogEntries    AuditLog[]  @relation("AuditLogActionUser")
+
+  /// Staff search members and users by name.
+  @@index([lastName, firstName])
+
+  /// Staff filter user lists by status, and by status together with role.
+  /// A composite index also serves queries on its leftmost column alone,
+  /// so this one covers plain "status" queries without a second index.
+  @@index([status, role])
+
+  /// Filtering by role alone cannot use the index above, because role is
+  /// not its leftmost column. This one covers that case.
+  @@index([role])
+}
+
+/// A person who may borrow books (README section 4.2). Separate from User so
+/// that "may log in" and "may borrow" stay independent concerns.
+model Member {
+  id String @id @default(uuid(7))
+
+  /// @unique on the foreign key is what makes this one-to-one rather than
+  /// one-to-many: the database refuses a second Member row for the same user.
+  userId String @unique
+  user   User   @relation("MemberUser", fields: [userId], references: [id], onDelete: Restrict)
+
+  status RecordStatus @default(ACTIVE)
+
+  registrationDate DateTime  @default(now())
+  updatedDate      DateTime  @updatedAt
+  disabledDate     DateTime?
+
+  disabledByUserId String?
+  disabledBy       User?   @relation("MemberDisabledBy", fields: [disabledByUserId], references: [id], onDelete: Restrict)
+
+  /// Nullable: a member who signs up publicly (README section 4.3) is
+  /// registered by nobody. Staff-created members carry the staff user's id.
+  registeredByUserId String?
+  registeredBy       User?   @relation("MemberRegisteredBy", fields: [registeredByUserId], references: [id], onDelete: Restrict)
+
+  loans Loan[]
+
+  @@index([status])
+}
+
+/// A book author (README section 7).
+model Author {
+  id        String  @id @default(uuid(7))
+  firstName String
+  lastName  String
+  biography String?
+
+  status RecordStatus @default(ACTIVE)
+
+  createdDate  DateTime  @default(now())
+  updatedDate  DateTime  @updatedAt
+  disabledDate DateTime?
+
+  disabledByUserId String?
+  disabledBy       User?   @relation("AuthorDisabledBy", fields: [disabledByUserId], references: [id], onDelete: Restrict)
+
+  /// Required, unlike User.createdByUserId: a catalogue record is always
+  /// entered by a staff member, never created by itself.
+  createdByUserId String
+  createdBy       User   @relation("AuthorCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  /// Books this author wrote, through the BookAuthor join model.
+  books BookAuthor[]
+
+  @@index([lastName, firstName])
+  @@index([status])
+}
+
+/// A publishing house (README section 7).
+model Publisher {
+  id          String  @id @default(uuid(7))
+  /// Unique to stop the same publisher being entered twice. Note this is
+  /// case-sensitive in PostgreSQL, so normalise before writing.
+  name        String  @unique
+  description String?
+
+  status RecordStatus @default(ACTIVE)
+
+  createdDate  DateTime  @default(now())
+  updatedDate  DateTime  @updatedAt
+  disabledDate DateTime?
+
+  disabledByUserId String?
+  disabledBy       User?   @relation("PublisherDisabledBy", fields: [disabledByUserId], references: [id], onDelete: Restrict)
+
+  createdByUserId String
+  createdBy       User   @relation("PublisherCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  books Book[]
+
+  @@index([status])
+}
+
+/// A subject category books can be filed under (README section 7).
+model Category {
+  id   String @id @default(uuid(7))
+  name String @unique
+
+  status RecordStatus @default(ACTIVE)
+
+  createdDate  DateTime  @default(now())
+  updatedDate  DateTime  @updatedAt
+  disabledDate DateTime?
+
+  disabledByUserId String?
+  disabledBy       User?   @relation("CategoryDisabledBy", fields: [disabledByUserId], references: [id], onDelete: Restrict)
+
+  createdByUserId String
+  createdBy       User   @relation("CategoryCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  books BookCategory[]
+
+  @@index([status])
+}
+
+/// The bibliographic record for a title (README section 7). A Book is the
+/// abstract work; the physical items on the shelf are BookCopy rows.
+model Book {
+  id String @id @default(uuid(7))
+
+  title String
+
+  /// A String, not a number: ISBNs have leading zeros, and an ISBN-10 check
+  /// digit can be the letter X. Optional because older titles predate ISBN.
+  /// Unique only among the books that have one - see note on NULLs below.
+  isbn String? @unique
+
+  publisherId String
+  publisher   Publisher @relation(fields: [publisherId], references: [id], onDelete: Restrict)
+
+  /// Genuinely a number: you range-query it ("books published 1990-2000").
+  /// Optional because publication year is not always known.
+  publicationYear Int?
+
+  description String?
+
+  /// No default: guessing the language would silently mislabel the catalogue.
+  language String
+
+  imageUrl String
+
+  status RecordStatus @default(ACTIVE)
+
+  createdDate  DateTime  @default(now())
+  updatedDate  DateTime  @updatedAt
+  disabledDate DateTime?
+
+  disabledByUserId String?
+  disabledBy       User?   @relation("BookDisabledBy", fields: [disabledByUserId], references: [id], onDelete: Restrict)
+
+  createdByUserId String
+  createdBy       User   @relation("BookCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  authors    BookAuthor[]
+  categories BookCategory[]
+
+  /// The physical items on the shelf (README section 8).
+  copies BookCopy[]
+
+  @@index([title])
+  @@index([status])
+  @@index([publisherId])
+}
+
+/// Links a book to its authors. An explicit model rather than an implicit
+/// many-to-many because the relationship itself carries data
+/// (isPrimaryAuthor), which an implicit join table cannot hold.
+model BookAuthor {
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Restrict)
+
+  authorId String
+  author   Author @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  /// Which name leads on the spine when a book has several authors.
+  isPrimaryAuthor Boolean @default(false)
+
+  /// A composite primary key: the pair is the identity, so no id column is
+  /// needed. It also makes attaching the same author twice impossible.
+  @@id([bookId, authorId])
+
+  /// The primary key indexes bookId first, so "authors of this book" is
+  /// already fast. "Books by this author" needs authorId leading.
+  @@index([authorId])
+}
+
+/// Links a book to its categories. Carries no extra data today, but is
+/// written explicitly so it can gain fields later without a migration that
+/// converts an implicit join table.
+model BookCategory {
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Restrict)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@id([bookId, categoryId])
+  @@index([categoryId])
+}
+
+/// One physical item on the shelf (README section 8.1). Loans attach to a
+/// copy, never to a Book, which is what makes multiple copies of a title work.
+model BookCopy {
+  id String @id @default(uuid(7))
+
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Restrict)
+
+  /// A String, not a number: barcodes carry leading zeros and often a
+  /// non-numeric prefix. Unique across the whole library.
+  barcode String @unique
+
+  /// Only AVAILABLE copies may be attached to a new loan (README section 8.3).
+  status CopyStatus @default(AVAILABLE)
+
+  acquisitionDate DateTime  @default(now())
+  updatedDate     DateTime  @updatedAt
+  disabledDate    DateTime?
+
+  disabledByUserId String?
+  disabledBy       User?   @relation("BookCopyDisabledBy", fields: [disabledByUserId], references: [id], onDelete: Restrict)
+
+  createdByUserId String
+  createdBy       User   @relation("BookCopyCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  loans Loan[]
+
+  /// "Is a copy of this book available?" - the catalogue's core question.
+  /// Being leftmost, bookId is also covered on its own, so no separate
+  /// @@index([bookId]) is needed.
+  @@index([bookId, status])
+
+  /// "Show every lost copy in the library", which the index above cannot
+  /// serve because status is not its leftmost column.
+  @@index([status])
+}
+
+/// A loan connects one member to one physical copy (README section 10).
+model Loan {
+  id String @id @default(uuid(7))
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Restrict)
+
+  bookCopyId String
+  bookCopy   BookCopy @relation(fields: [bookCopyId], references: [id], onDelete: Restrict)
+
+  status LoanStatus @default(ACTIVE)
+
+  createdDate DateTime @default(now())
+
+  /// No default: the loan period is a policy decision, not a database one.
+  dueDate DateTime
+
+  /// The return workflow, as separate timestamps rather than one field, so
+  /// the full history survives. A member may request a return, cancel it,
+  /// then request again; each step keeps its own moment in time.
+  returnRequestedDate        DateTime?
+  returnRequestCancelledDate DateTime?
+  returnDate                 DateTime?
+  returnProcessedDate        DateTime?
+
+  /// Required: only Admins and Librarians create loans (README section 10.3),
+  /// so there is always a staff member accountable for it.
+  createdByUserId String
+  createdBy       User   @relation("LoanCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  /// Null until staff confirm the physical return (README section 11.2).
+  returnProcessedByUserId String?
+  returnProcessedBy       User?   @relation("LoanReturnProcessedBy", fields: [returnProcessedByUserId], references: [id], onDelete: Restrict)
+
+  updatedDate DateTime @updatedAt
+
+  /// "My loans, filtered by status" - the member dashboard. Covers memberId
+  /// alone as well.
+  @@index([memberId, status])
+
+  /// Checking whether a copy already has an open loan.
+  @@index([bookCopyId])
+
+  /// Overdue sweep: open loans whose dueDate has passed.
+  @@index([status, dueDate])
+}
+
+/// Append-only record of important actions (README section 15).
+model AuditLog {
+  id String @id @default(uuid(7))
+
+  actionType ActionType
+
+  actionUserId String
+  actionUser   User  @relation("AuditLogActionUser", fields: [actionUserId], references: [id], onDelete: Restrict)
+
+  actionUserRole Role
+
+  affectedType EntityType
+
+  /// Deliberately NOT a foreign key: this one column points at ten different
+  /// tables depending on affectedType, and a SQL foreign key can only
+  /// reference one. The pairing with affectedType is what identifies the row.
+  affectedRecordId String?
+
+  /// Json rather than String: the shape differs per entity, and Json lets you
+  /// query into the document later.
+  previousValue     Json?
+  newValue          Json?
+  additionalContext Json?
+
+  createdDate DateTime @default(now())
+
+  /// "Show the full history of this book" - the pair together, since
+  /// affectedRecordId alone is meaningless without its type.
+  @@index([affectedType, affectedRecordId])
+
+  /// "What did this user do?"
+  @@index([actionUserId])
+
+  /// Filtering the audit page by action, and by time range.
+  @@index([actionType])
+  @@index([createdDate])
+}

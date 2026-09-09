@@ -8,12 +8,12 @@ const required = (name: string): string => {
   return value;
 };
 
-const dbUser = required("DB_USER");
-const dbPassword = required("DB_PASSWORD");
-const dbHost = required("DB_HOST");
-const dbPort = required("DB_PORT");
-const dbName = required("DB_NAME");
-const dbSchema = process.env.DB_SCHEMA || "public";
+const dbUser = required('DB_USER');
+const dbPassword = required('DB_PASSWORD');
+const dbHost = required('DB_HOST');
+const dbPort = required('DB_PORT');
+const dbName = required('DB_NAME');
+const dbSchema = process.env.DB_SCHEMA || 'public';
 
 const databaseUrl =
   `postgresql://${encodeURIComponent(dbUser)}` +
@@ -21,7 +21,7 @@ const databaseUrl =
   `@${dbHost}:${dbPort}/${encodeURIComponent(dbName)}` +
   `?schema=${encodeURIComponent(dbSchema)}`;
 
-const backendPort = process.env.BACKEND_PORT || "3001";
+const backendPort = process.env.BACKEND_PORT || '3001';
 const backendUrl = `http://localhost:${backendPort}`;
 
-export {databaseUrl, backendUrl, backendPort};
+export { databaseUrl, backendUrl, backendPort };
