@@ -12,6 +12,9 @@ healthRouter.get("/", (_request, response) => {
   };
 
   response.status(status.OK).json(
-    ApiResponse.success(healthData, "Service is healthy")
+    ApiResponse.success(
+      healthData, 
+      "Service is healthy"
+    )
   );
 });
