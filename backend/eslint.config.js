@@ -1,12 +1,12 @@
 // CommonJS syntax is required here: backend/package.json sets
 // "type": "commonjs", so ESLint loads this file as CommonJS.
 // (The frontend uses ESM syntax because its package is "type": "module".)
-const js = require('@eslint/js');
-const globals = require('globals');
-const tseslint = require('typescript-eslint');
-const { defineConfig, globalIgnores } = require('eslint/config');
+import js from '@eslint/js';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
-module.exports = defineConfig([
+export default defineConfig([
   globalIgnores(['dist']),
   {
     files: ['**/*.ts'],
