@@ -1,35 +1,40 @@
-// backend/src/server.ts
-import express from 'express';
-import prisma from './prisma/prisma.ts'; // Import your custom client
-import { backendPort, backendUrl } from './config/env.ts';
-import { logger } from './logger/logger.ts';
+import { createApp } from "./app.js";
+import { backendPort, nodeEnv } from "./config/env.ts";
+import prisma from "./prisma/prisma.ts";
+import { logger } from "./logger/logger.ts";
 
-const app = express();
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
+const app = createApp();
 
 const server = app.listen(backendPort, () => {
-  logger.info(`Server running at ${backendUrl}`);
+  logger.info(
+    {
+      port: backendPort,
+      environment: nodeEnv
+    },
+    "Library API started"
+  );
 });
 
-server.on('error', (err: any) => {
-  logger.fatal({ error: err }, `Failed to start server on port ${backendPort}`);
+async function shutdown(signal: string): Promise<void> {
+  logger.info(
+    { signal }, 
+    "Shutdown signal received"
+  );
+  await prisma.$disconnect(); // Disconnect from the database
 
-  process.exit(1); // Force terminate the process safely
-});
+  server.close((error) => {
+    if (error) {
+      logger.error(
+        { err: error }, 
+        "Error during server shutdown"
+      );
+      process.exit(1);
+    }
 
-// Add the shutdown logic here
-const shutdown = async () => {
-  logger.info('Shutting down gracefully...');
-  await prisma.$disconnect();
-
-  server.close(() => {
-    logger.info('Process terminated.');
+    logger.info("HTTP server closed");
     process.exit(0);
   });
-};
+}
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
