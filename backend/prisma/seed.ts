@@ -7,14 +7,12 @@
  * The script clears every table first, so it is safe to run repeatedly during
  * development. That also makes it destructive, hence the production guard.
  */
-import bcrypt from 'bcryptjs';
 import prisma from '../src/prisma/prisma.ts';
 import { Prisma, Role, CopyStatus } from '@prisma/client';
 import { EnvironmentConfigError } from '../src/constants/types/errors/EnvironmentConfigError.ts';
 import { logger } from '../src/logger/logger.ts';
-
-const SEED_PASSWORD = process.env.SEED_PASSWORD ?? 'Password123!';
-const BCRYPT_ROUNDS = 10;
+import { seedPassword, nodeEnv, allowDestructiveSeed } from '../src/config/env.ts';
+import { hashPassword } from '../src/utils/password-hash.ts';
 
 /**
  * Delete every row, children before parents.
@@ -38,11 +36,9 @@ async function clearDatabase(tx: Prisma.TransactionClient): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  if (process.env.NODE_ENV === 'production') {
+  if (nodeEnv === 'production') {
     throw new EnvironmentConfigError('Refusing to run the seed script with NODE_ENV=production.');
-  }
-
-  if (process.env.ALLOW_DESTRUCTIVE_SEED !== 'true') {
+  } else if (allowDestructiveSeed !== 'true') {
     throw new EnvironmentConfigError(
       'Set ALLOW_DESTRUCTIVE_SEED=true to run this destructive seed.',
     );
@@ -50,7 +46,7 @@ async function main(): Promise<void> {
 
   // Hashing is CPU work that touches no database, so it runs before the
   // transaction opens rather than holding a connection while it burns cycles.
-  const passwordHash = await bcrypt.hash(SEED_PASSWORD, BCRYPT_ROUNDS);
+  const passwordHash = hashPassword(seedPassword);
 
   // Every write below runs inside one interactive transaction: the clear and
   // all of the inserts either land together or not at all. A failure part-way
