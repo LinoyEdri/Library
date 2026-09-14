@@ -1,8 +1,8 @@
 import express from 'express';
-import { requestIdMiddleware } from './middlewares/request-id.middleware.ts';
-import { requestLoggerMiddleware } from './middlewares/request-logger.middleware.ts';
-import { notFoundMiddleware } from './middlewares/not-found.middleware.ts';
-import { errorMiddleware } from './middlewares/error.middleware.ts';
+import { requestIdMiddleware } from './middlewares/request/request-id.middleware.ts';
+import { requestLoggerMiddleware } from './middlewares/request/request-logger.middleware.ts';
+import { notFoundMiddleware } from './middlewares/error/not-found.middleware.ts';
+import { errorMiddleware } from './middlewares/error/error.middleware.ts';
 import { corsOrigin } from './config/env.ts';
 import helmet from 'helmet';
 import cors from 'cors';
