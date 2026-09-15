@@ -58,6 +58,7 @@ export const errorMiddleware: ErrorRequestHandler = (
   error: unknown,
   request,
   response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next,
 ): void => {
   const statusCode = getErrorStatusCode(error);
