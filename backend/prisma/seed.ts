@@ -9,10 +9,10 @@
  */
 import prisma from '../src/prisma/prisma.ts';
 import { Prisma, Role, CopyStatus } from '@prisma/client';
-import { EnvironmentConfigError } from '../src/constants/types/errors/EnvironmentConfigError.ts';
+import { EnvironmentConfigError } from '../src/types/errors/EnvironmentConfigError.ts';
 import { logger } from '../src/logger/logger.ts';
 import { seedPassword, nodeEnv, allowDestructiveSeed } from '../src/config/env.ts';
-import { hashPassword } from '../src/utils/password-hash.ts';
+import { bcryptPassword } from "../src/utils/password-hash.ts"
 
 /**
  * Delete every row, children before parents.
@@ -46,7 +46,7 @@ async function main(): Promise<void> {
 
   // Hashing is CPU work that touches no database, so it runs before the
   // transaction opens rather than holding a connection while it burns cycles.
-  const passwordHash = hashPassword(seedPassword);
+  const passwordHash = bcryptPassword.hashPassword(seedPassword);
 
   // Every write below runs inside one interactive transaction: the clear and
   // all of the inserts either land together or not at all. A failure part-way
