@@ -7,6 +7,7 @@ import { NotFoundError } from "../types/errors/NotFoundError.ts";
 import { bcryptPassword } from "../utils/password-hash.ts";
 import { UnauthorizedError } from "../types/errors/UnauthorizedError.ts";
 import { jwtToken } from "../utils/token.ts";
+import { addressRepository } from "../repositories/address.repository.ts";
 
 export const userService = {
     async register(input: RegisterInput): Promise<SafeUser> {
@@ -18,8 +19,14 @@ export const userService = {
 
         const paswordHash = await bcryptPassword.hashPassword(input.password);
         const newUser = await userRepository.createUser(input, paswordHash);
+        
+        const address = await addressRepository.findById(newUser.addressId);
 
-        return toSafeUser(newUser);
+        if (!address) {
+            throw new NotFoundError("Missing address")
+        }
+
+        return toSafeUser(newUser, address);
     },
 
     async login(input: LoginInput): Promise<LoginUser> {
@@ -41,9 +48,15 @@ export const userService = {
             role: user.role
         })
 
+        const address = await addressRepository.findById(user.addressId);
+
+        if (!address) {
+            throw new NotFoundError("Missing address")
+        }
+
         return {
             accessToken: token,
-            user: toSafeUser(user)
+            user: toSafeUser(user, address)
         };
     },
 
@@ -54,6 +67,12 @@ export const userService = {
             throw new NotFoundError("User not found");
         }
 
-        return toSafeUser(user);
+        const address = await addressRepository.findById(user.addressId);
+
+        if (!address) {
+            throw new NotFoundError("Missing address")
+        }
+
+        return toSafeUser(user, address);
     }
 };

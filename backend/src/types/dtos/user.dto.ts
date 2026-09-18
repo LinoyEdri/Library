@@ -1,4 +1,4 @@
-import type { User } from '@prisma/client';
+import type { Address, User } from '@prisma/client';
 
 export interface SafeUser {
   id: string;
@@ -8,6 +8,7 @@ export interface SafeUser {
   phoneNumber: string;
   status: string;
   role: string;
+  address: Address
   lastLoginDate: Date | null;
 }
 
@@ -16,7 +17,7 @@ export interface LoginUser {
   user: SafeUser,
 };
 
-export function toSafeUser(user: User): SafeUser {
+export function toSafeUser(user: User, address: Address): SafeUser {
   return {
     id: user.id,
     firstName: user.firstName,
@@ -25,6 +26,7 @@ export function toSafeUser(user: User): SafeUser {
     phoneNumber: user.phoneNumber,
     status: user.status,
     role: user.role,
+    address: address,
     lastLoginDate: user.lastLoginDate,
   };
 }

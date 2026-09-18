@@ -40,7 +40,7 @@ export const addressSchema = z.object({
     fieldName: "Country",
     regex: regexTypes.alphaOnly,
     regexMessage: "Country name must contain letters only"
-  }).nullable().default('Israel').optional(),
+  }).default('Israel').optional(),
 });
 
 export const registerSchema = z.object({
@@ -88,6 +88,7 @@ export const accessTokenPayloadSchema = z.object({
   role: z.enum(Role),
 });
 
+export type AddressInput = z.infer<typeof addressSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type AccessTokenPayload = z.infer<typeof accessTokenPayloadSchema>;
