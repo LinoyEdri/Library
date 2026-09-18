@@ -19,7 +19,7 @@ export default defineConfig([
       parserOptions: {
         project: "./tsconfig.json",
         // Automatically sets the root to the current directory of the file
-        tsconfigRootDir: import.meta.dirname, 
+        tsconfigRootDir: __dirname, 
       }
     },
   },
