@@ -26,7 +26,6 @@ const allowDestructiveSeed = process.env.ALLOW_DESTRUCTIVE_SEED || true;
 const jwtSecret = requireEnv('JWT_SECRET');
 const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '1h';
 const corsOrigin = requireEnv('CORS_ORIGIN');
-const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || '10', 10);
 
 const databaseUrl =
   `postgresql://${encodeURIComponent(dbUser)}` +
@@ -47,5 +46,4 @@ export {
   jwtSecret, 
   jwtExpiresIn, 
   corsOrigin,
-  saltRounds
 };
