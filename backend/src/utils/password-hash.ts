@@ -1,12 +1,13 @@
 import bcrypt from 'bcryptjs';
-import { saltRounds } from '../config/env.ts';
 
-const hashPassword = (password: string): string => {
-  return bcrypt.hashSync(password, saltRounds);
-}
+const SALT_ROUNDS = 10;
 
-const comparePassword = (password: string, hashedPassword: string): boolean => {
-  return bcrypt.compareSync(password, hashedPassword);
-}
+export const bcryptPassword = {
+  hashPassword(password: string): string {
+    return bcrypt.hashSync(password, SALT_ROUNDS)
+  },
 
-export { hashPassword, comparePassword };
+  comparePassword(password: string, hashedPassword: string): boolean {
+    return bcrypt.compareSync(password, hashedPassword);
+  },
+};

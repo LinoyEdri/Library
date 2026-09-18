@@ -74,7 +74,7 @@ const openapiDefinition: swaggerJSDoc.Options = {
   },
   apis: [
     fromHere('../routes/**/*.{ts,js}'),
-    fromHere('../controllers/**/*.{ts,js}'),
+    fromHere('../routes/docs/**/*.{ts,js}'),
   ],
 };
 

@@ -71,10 +71,9 @@ export const errorMiddleware: ErrorRequestHandler = (
 
   logger.error(
     {
-      err: error,
+      message: message,
       method: request.method,
       path: request.originalUrl,
-      requestId: request.requestId,
       statusCode,
     },
     "Request failed",
