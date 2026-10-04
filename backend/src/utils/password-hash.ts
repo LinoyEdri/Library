@@ -2,12 +2,13 @@ import bcrypt from 'bcryptjs';
 
 const SALT_ROUNDS = 10;
 
+// Async versions so hashing does not block the event loop
 export const bcryptPassword = {
-  hashPassword(password: string): string {
-    return bcrypt.hashSync(password, SALT_ROUNDS)
+  async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, SALT_ROUNDS);
   },
 
-  comparePassword(password: string, hashedPassword: string): boolean {
-    return bcrypt.compareSync(password, hashedPassword);
+  async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
+    return bcrypt.compare(password, hashedPassword);
   },
 };

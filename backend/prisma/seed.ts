@@ -46,7 +46,7 @@ async function main(): Promise<void> {
 
   // Hashing is CPU work that touches no database, so it runs before the
   // transaction opens rather than holding a connection while it burns cycles.
-  const passwordHash = bcryptPassword.hashPassword(seedPassword);
+  const passwordHash = await bcryptPassword.hashPassword(seedPassword);
 
   // Every write below runs inside one interactive transaction: the clear and
   // all of the inserts either land together or not at all. A failure part-way

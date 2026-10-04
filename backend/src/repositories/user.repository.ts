@@ -4,30 +4,48 @@ import type { RegisterInput } from "@library/shared";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { PrismaErrorCodes } from "../prisma/error-codes.ts";
 import { ConflictError } from "../types/errors/ConflictError.ts";
-import { User } from "@prisma/client";
+import type { UserWithAddress } from "../types/dtos/user.dto.ts";
+
+// Every query loads the address too, so callers can build a SafeUser directly
+const includeAddress = { address: true } as const;
 
 export const userRepository = {
-    async findByEmail(email: string): Promise<User | null> {
+    async findByEmail(email: string): Promise<UserWithAddress | null> {
         try {
             return await prisma.user.findUnique({
                 where: { email },
-            })
+                include: includeAddress,
+            });
         } catch {
             throw new InternalError("Database connection error during lookup");
         }
     },
 
-    async findById(id: string): Promise<User | null> {
+    async findById(id: string): Promise<UserWithAddress | null> {
         try {
             return await prisma.user.findUnique({
                 where: { id },
-            })
+                include: includeAddress,
+            });
         } catch {
             throw new InternalError("Database connection error during lookup");
         }
     },
 
-    async createUser(userDto: RegisterInput, passwordHash: string): Promise<User> {
+    async updateLastLoginDate(id: string, lastLoginDate: Date): Promise<UserWithAddress> {
+        try {
+            return await prisma.user.update({
+                where: { id },
+                data: { lastLoginDate },
+                include: includeAddress,
+            });
+        } catch {
+            throw new InternalError("Failed to update last login date");
+        }
+    },
+
+    // Creates the address and the user together - if the user fails, the address is rolled back
+    async createUser(userDto: RegisterInput, passwordHash: string): Promise<UserWithAddress> {
         try {
             return await prisma.$transaction(async (tx) => {
                 const address = await tx.address.create({
@@ -45,17 +63,17 @@ export const userRepository = {
                     data: {
                         firstName: userDto.firstName,
                         lastName: userDto.lastName,
-                        email: userDto.email, 
+                        email: userDto.email,
                         passwordHash,
                         phoneNumber: userDto.phoneNumber,
                         addressId: address.id,
                     },
+                    include: includeAddress,
                 });
             });
         } catch (error) {
-
-            if (error instanceof PrismaClientKnownRequestError 
-                && error.code === PrismaErrorCodes.UNIQUE_CONSTRAINT){
+            if (error instanceof PrismaClientKnownRequestError
+                && error.code === PrismaErrorCodes.UNIQUE_CONSTRAINT) {
                 throw new ConflictError("This email address is already registered");
             }
 

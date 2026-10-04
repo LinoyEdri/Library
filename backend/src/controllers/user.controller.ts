@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../utils/catch-async.ts";
-import { userService } from "../services/user.service.ts";
+import { authenticationService } from "../services/authentication.service.ts";
 import { StatusCodes } from "http-status-codes";
 import { UnauthorizedError } from "../types/errors/UnauthorizedError.ts";
 
@@ -9,7 +9,7 @@ export const userController = {
         req: Request,
         res:Response,
     ) => {
-        const newUser = await userService.register(req.body);
+        const newUser = await authenticationService.register(req.body);
         
         res.status(StatusCodes.CREATED).json(newUser)
     }),
@@ -18,7 +18,7 @@ export const userController = {
         req: Request,
         res: Response
     ) => {
-        const loginUser = await userService.login(req.body);
+        const loginUser = await authenticationService.login(req.body);
 
         res.status(StatusCodes.OK).json(loginUser);
     }),
@@ -32,7 +32,7 @@ export const userController = {
             return next(new UnauthorizedError("Invalid credentials"));
         }
 
-        const user = await userService.getMe(req.user.sub);
+        const user = await authenticationService.getCurrentUser(req.user.sub);
 
         res.status(StatusCodes.OK).json(user);
     }),

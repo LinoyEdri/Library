@@ -1,23 +1,32 @@
-import type { Address, User } from '@prisma/client';
+import type { Address, Prisma, RecordStatus, Role } from '@prisma/client';
 
+// User row loaded together with its address
+export type UserWithAddress = Prisma.UserGetPayload<{ include: { address: true } }>;
+
+// User data that is safe to send to clients (no password hash)
 export interface SafeUser {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
   phoneNumber: string;
-  status: string;
-  role: string;
-  address: Address
+  status: RecordStatus;
+  role: Role;
+  address: Address;
   lastLoginDate: Date | null;
 }
 
-export interface LoginUser {
-  accessToken: string,
-  user: SafeUser,
-};
+// Result of a successful login
+export interface LoginResult {
+  accessToken: string;
+  tokenType: 'Bearer';
+  expiresIn: string;
+  expiresAt: Date;
+  user: SafeUser;
+}
 
-export function toSafeUser(user: User, address: Address): SafeUser {
+// Explicit field-by-field mapping so new sensitive columns are never leaked by accident
+export function toSafeUser(user: UserWithAddress): SafeUser {
   return {
     id: user.id,
     firstName: user.firstName,
@@ -26,7 +35,7 @@ export function toSafeUser(user: User, address: Address): SafeUser {
     phoneNumber: user.phoneNumber,
     status: user.status,
     role: user.role,
-    address: address,
+    address: user.address,
     lastLoginDate: user.lastLoginDate,
   };
 }
