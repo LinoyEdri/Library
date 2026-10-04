@@ -29,7 +29,7 @@ export const authenticationController = {
             return next(new UnauthorizedError("Authentication required"));
         }
 
-        const currentUser = await authenticationService.getCurrentUser(req.user.sub);
+        const currentUser = await authenticationService.getCurrentUser(req.user.id);
 
         res.status(StatusCodes.OK).json(
             ApiResponse.success(currentUser, "User retrieved successfully"),

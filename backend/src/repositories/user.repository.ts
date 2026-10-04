@@ -32,6 +32,24 @@ export const userRepository = {
         }
     },
 
+    // Minimal data needed on every authenticated request (identity, role, status, member link)
+    async findAuthenticationContextById(id: string) {
+        try {
+            return await prisma.user.findUnique({
+                where: { id },
+                select: {
+                    id: true,
+                    email: true,
+                    role: true,
+                    status: true,
+                    member: { select: { id: true } },
+                },
+            });
+        } catch {
+            throw new InternalError("Database connection error during lookup");
+        }
+    },
+
     async updateLastLoginDate(id: string, lastLoginDate: Date): Promise<UserWithAddress> {
         try {
             return await prisma.user.update({

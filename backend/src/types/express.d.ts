@@ -1,10 +1,10 @@
-import type { AccessTokenPayload } from "../schemas/access-token-payload.schema.ts";
+import type { AuthenticatedUser } from "./authenticated-user.ts";
 
 declare global {
   namespace Express {
     interface Request {
       requestId?: string;
-      user?: AccessTokenPayload
+      user?: AuthenticatedUser;
     }
   }
 }
