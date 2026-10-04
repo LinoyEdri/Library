@@ -38,7 +38,7 @@ async function clearDatabase(tx: Prisma.TransactionClient): Promise<void> {
 async function main(): Promise<void> {
   if (nodeEnv === 'production') {
     throw new EnvironmentConfigError('Refusing to run the seed script with NODE_ENV=production.');
-  } else if (allowDestructiveSeed !== 'true') {
+  } else if (!allowDestructiveSeed) {
     throw new EnvironmentConfigError(
       'Set ALLOW_DESTRUCTIVE_SEED=true to run this destructive seed.',
     );

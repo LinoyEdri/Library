@@ -1,49 +1,53 @@
-import { EnvironmentConfigError } from "../types/errors/EnvironmentConfigError.ts";
+import path from "node:path";
 import dotenv from "dotenv";
+import { EnvironmentConfigError } from "../types/errors/EnvironmentConfigError.ts";
+import { environmentVariablesSchema } from "./environment-variables.schema.ts";
 
-// Load environment variables from .env file
-dotenv.config();
+// Backend root folder (src/config -> backend), so loading works from any working directory
+const backendRootDirectory = path.resolve(import.meta.dirname, "../..");
 
-const requireEnv = (name: string): string => {
-  const value = process.env[name];
+// Tests read .env.test first; values missing there fall back to .env
+const environmentFilePaths = process.env.NODE_ENV === "test"
+    ? [path.join(backendRootDirectory, ".env.test"), path.join(backendRootDirectory, ".env")]
+    : [path.join(backendRootDirectory, ".env")];
 
-  if (!value) {
-    throw new EnvironmentConfigError(`Missing required environment variable: ${name}`);
-  }
+dotenv.config({ path: environmentFilePaths, quiet: true });
 
-  return value;
-};
+const parsedEnvironment = environmentVariablesSchema.safeParse(process.env);
 
-const nodeEnv = process.env.NODE_ENV || 'development';
-const dbUser = requireEnv('DB_USER');
-const dbPassword = requireEnv('DB_PASSWORD');
-const dbHost = requireEnv('DB_HOST');
-const dbPort = requireEnv('DB_PORT');
-const dbName = requireEnv('DB_NAME');
-const dbSchema = process.env.DB_SCHEMA || 'public';
-const seedPassword = process.env.SEED_PASSWORD || 'Password123!';
-const allowDestructiveSeed = process.env.ALLOW_DESTRUCTIVE_SEED || true;
-const jwtSecret = requireEnv('JWT_SECRET');
-const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '1h';
-const corsOrigin = requireEnv('CORS_ORIGIN');
+if (!parsedEnvironment.success) {
+    const problems = parsedEnvironment.error.issues
+        .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+        .join("; ");
 
-const databaseUrl =
-  `postgresql://${encodeURIComponent(dbUser)}` +
-  `:${encodeURIComponent(dbPassword)}` +
-  `@${dbHost}:${dbPort}/${encodeURIComponent(dbName)}` +
-  `?schema=${encodeURIComponent(dbSchema)}`;
+    throw new EnvironmentConfigError(`Invalid environment variables - ${problems}`);
+}
 
-const backendPort = process.env.BACKEND_PORT || '3001';
+const environment = parsedEnvironment.data;
+
+const nodeEnv = environment.NODE_ENV;
+const seedPassword = environment.SEED_PASSWORD;
+const allowDestructiveSeed = environment.ALLOW_DESTRUCTIVE_SEED;
+const jwtSecret = environment.JWT_SECRET;
+const jwtExpiresIn = environment.JWT_EXPIRES_IN;
+const corsOrigin = environment.CORS_ORIGIN;
+const backendPort = environment.BACKEND_PORT;
 const backendUrl = `http://localhost:${backendPort}`;
 
-export { 
-  nodeEnv,
-  databaseUrl, 
-  backendUrl, 
-  backendPort, 
-  seedPassword, 
-  allowDestructiveSeed, 
-  jwtSecret, 
-  jwtExpiresIn, 
-  corsOrigin,
+const databaseUrl =
+    `postgresql://${encodeURIComponent(environment.DB_USER)}` +
+    `:${encodeURIComponent(environment.DB_PASSWORD)}` +
+    `@${environment.DB_HOST}:${environment.DB_PORT}/${encodeURIComponent(environment.DB_NAME)}` +
+    `?schema=${encodeURIComponent(environment.DB_SCHEMA)}`;
+
+export {
+    nodeEnv,
+    databaseUrl,
+    backendUrl,
+    backendPort,
+    seedPassword,
+    allowDestructiveSeed,
+    jwtSecret,
+    jwtExpiresIn,
+    corsOrigin,
 };
