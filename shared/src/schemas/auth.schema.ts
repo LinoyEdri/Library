@@ -6,7 +6,7 @@ import { createStringField, emailField, regexTypes } from './schema-field-helper
 export const newPasswordField = createStringField({
   min: 8,
   max: 128,
-  fieldName: 'Password',
+  fieldName: 'סיסמה',
 });
 
 // Body of POST /auth/register
@@ -14,17 +14,17 @@ export const registerSchema = z.object({
   firstName: createStringField({
     min: 1,
     max: 100,
-    fieldName: 'First name',
+    fieldName: 'שם פרטי',
     regex: regexTypes.lettersOnly,
-    regexMessage: 'First name must contain letters only',
+    regexMessage: 'שם פרטי יכול להכיל אותיות בלבד',
   }),
 
   lastName: createStringField({
     min: 1,
     max: 100,
-    fieldName: 'Last name',
+    fieldName: 'שם משפחה',
     regex: regexTypes.lettersOnly,
-    regexMessage: 'Last name must contain letters only',
+    regexMessage: 'שם משפחה יכול להכיל אותיות בלבד',
   }),
 
   email: emailField,
@@ -34,9 +34,9 @@ export const registerSchema = z.object({
   phoneNumber: createStringField({
     min: 9,
     max: 10,
-    fieldName: 'Phone number',
+    fieldName: 'מספר טלפון',
     regex: regexTypes.digitsOnly,
-    regexMessage: 'Phone number must contain digits only',
+    regexMessage: 'מספר טלפון יכול להכיל ספרות בלבד',
   }),
 
   address: addressSchema,
@@ -46,7 +46,7 @@ export const registerSchema = z.object({
 export const loginSchema = z.object({
   email: emailField,
 
-  password: z.string().min(1, { message: 'Password is required' }).max(128),
+  password: z.string().min(1, { message: 'יש להזין סיסמה' }).max(128),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import express from 'express';
 import request from 'supertest';
+import { StatusCodes } from 'http-status-codes';
 import { Role } from '@prisma/client';
 import { Permission } from '@library/shared';
 import { requireAuthentication } from '../../middlewares/auth/require-authentication.middleware.ts';
@@ -24,7 +25,7 @@ const createApplicationWithAdminOnlyRoute = () => {
     authorizePermission(Permission.BOOKS_DISABLE),
     (req, res) => {
       res
-        .status(200)
+        .status(StatusCodes.OK)
         .json({ success: true, data: { userId: req.user?.id, memberId: req.user?.memberId } });
     },
   );
@@ -52,7 +53,7 @@ describe('requireAuthentication + authorizePermission', () => {
       .post('/books/1/disable')
       .set('Authorization', authorizationHeaderFor(admin));
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(StatusCodes.OK);
     expect(response.body.data.userId).toBe(admin.id);
   });
 
@@ -63,14 +64,14 @@ describe('requireAuthentication + authorizePermission', () => {
       .post('/books/1/disable')
       .set('Authorization', authorizationHeaderFor(user));
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(StatusCodes.FORBIDDEN);
     expect(response.body.success).toBe(false);
   });
 
   it('rejects a request without a token (401)', async () => {
     const response = await request(application).post('/books/1/disable');
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   it('uses the role from the database, not the token, so role changes apply immediately', async () => {
@@ -84,7 +85,7 @@ describe('requireAuthentication + authorizePermission', () => {
       .post('/books/1/disable')
       .set('Authorization', tokenIssuedWhileViewer);
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(StatusCodes.OK);
   });
 
   it('attaches the member id for MEMBER users', async () => {

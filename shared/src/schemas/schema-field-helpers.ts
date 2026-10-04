@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+// Default Zod messages (e.g. "expected string") are shown in Hebrew, in both backend and frontend
+z.config(z.locales.he());
+
 type StringFieldOptions = {
   min: number;
   max: number;
@@ -14,7 +17,7 @@ export const regexTypes = {
   digitsOnly: /^\d+$/,
 } as const;
 
-// Trimmed string with length limits and an optional pattern
+// Trimmed string with length limits and an optional pattern. Messages are in Hebrew.
 export const createStringField = ({
   min,
   max,
@@ -25,8 +28,11 @@ export const createStringField = ({
   const baseSchema = z
     .string()
     .trim()
-    .min(min, { message: `${fieldName} must be at least ${min} characters long` })
-    .max(max, { message: `${fieldName} cannot exceed ${max} characters` });
+    .min(min, {
+      message:
+        min === 1 ? `${fieldName} הוא שדה חובה` : `${fieldName} חייב להכיל לפחות ${min} תווים`,
+    })
+    .max(max, { message: `${fieldName} יכול להכיל עד ${max} תווים` });
 
   return regex ? baseSchema.regex(regex, { message: regexMessage }) : baseSchema;
 };
@@ -35,5 +41,5 @@ export const createStringField = ({
 export const emailField = z
   .string()
   .trim()
-  .email('Invalid email address')
+  .email('כתובת אימייל לא תקינה')
   .transform((value) => value.toLowerCase());
