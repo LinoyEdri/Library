@@ -1,5 +1,6 @@
 import path from 'node:path';
 import swaggerJSDoc from 'swagger-jsdoc';
+import { openapiComponentSchemas } from './openapi-component-schemas.ts';
 
 // Resolve relative to this file so the globs work under tsx (src/) and node (dist/).
 // glob treats "\" as an escape character, so patterns must use forward slashes.
@@ -21,10 +22,9 @@ const openapiDefinition: swaggerJSDoc.Options = {
       },
     ],
     tags: [
-      {
-        name: 'Health',
-        description: 'Application health endpoints',
-      },
+      { name: 'Health', description: 'Application health endpoints' },
+      { name: 'Docs', description: 'API documentation endpoints' },
+      { name: 'Auth', description: 'Registration, login and current user' },
     ],
     components: {
       securitySchemes: {
@@ -34,42 +34,7 @@ const openapiDefinition: swaggerJSDoc.Options = {
           bearerFormat: 'JWT',
         },
       },
-      schemas: {
-        ApiError: {
-          type: 'object',
-          required: ['success', 'message', 'requestId'],
-          properties: {
-            success: {
-              type: 'boolean',
-              example: false,
-            },
-            message: {
-              type: 'string',
-              example: 'Validation failed',
-            },
-            requestId: {
-              type: 'string',
-              example: 'req_123456',
-            },
-            details: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  field: {
-                    type: 'string',
-                    example: 'email',
-                  },
-                  message: {
-                    type: 'string',
-                    example: 'Invalid email address',
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      schemas: openapiComponentSchemas,
     },
   },
   apis: [
