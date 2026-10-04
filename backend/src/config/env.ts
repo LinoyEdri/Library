@@ -1,27 +1,54 @@
-const required = (name: string): string => {
-  const value = process.env[name];
+import path from 'node:path';
+import dotenv from 'dotenv';
+import { EnvironmentConfigError } from '../types/errors/EnvironmentConfigError.ts';
+import { environmentVariablesSchema } from './environment-variables.schema.ts';
 
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
+// Backend root folder (src/config -> backend), so loading works from any working directory
+const backendRootDirectory = path.resolve(import.meta.dirname, '../..');
 
-  return value;
-};
+// Tests read .env.test first; values missing there fall back to .env
+const environmentFilePaths =
+  process.env.NODE_ENV === 'test'
+    ? [path.join(backendRootDirectory, '.env.test'), path.join(backendRootDirectory, '.env')]
+    : [path.join(backendRootDirectory, '.env')];
 
-const dbUser = required('DB_USER');
-const dbPassword = required('DB_PASSWORD');
-const dbHost = required('DB_HOST');
-const dbPort = required('DB_PORT');
-const dbName = required('DB_NAME');
-const dbSchema = process.env.DB_SCHEMA || 'public';
+dotenv.config({ path: environmentFilePaths, quiet: true });
 
-const databaseUrl =
-  `postgresql://${encodeURIComponent(dbUser)}` +
-  `:${encodeURIComponent(dbPassword)}` +
-  `@${dbHost}:${dbPort}/${encodeURIComponent(dbName)}` +
-  `?schema=${encodeURIComponent(dbSchema)}`;
+const parsedEnvironment = environmentVariablesSchema.safeParse(process.env);
 
-const backendPort = process.env.BACKEND_PORT || '3001';
+if (!parsedEnvironment.success) {
+  const problems = parsedEnvironment.error.issues
+    .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+    .join('; ');
+
+  throw new EnvironmentConfigError(`Invalid environment variables - ${problems}`);
+}
+
+const environment = parsedEnvironment.data;
+
+const nodeEnv = environment.NODE_ENV;
+const seedPassword = environment.SEED_PASSWORD;
+const allowDestructiveSeed = environment.ALLOW_DESTRUCTIVE_SEED;
+const jwtSecret = environment.JWT_SECRET;
+const jwtExpiresIn = environment.JWT_EXPIRES_IN;
+const corsOrigin = environment.CORS_ORIGIN;
+const backendPort = environment.BACKEND_PORT;
 const backendUrl = `http://localhost:${backendPort}`;
 
-export { databaseUrl, backendUrl, backendPort };
+const databaseUrl =
+  `postgresql://${encodeURIComponent(environment.DB_USER)}` +
+  `:${encodeURIComponent(environment.DB_PASSWORD)}` +
+  `@${environment.DB_HOST}:${environment.DB_PORT}/${encodeURIComponent(environment.DB_NAME)}` +
+  `?schema=${encodeURIComponent(environment.DB_SCHEMA)}`;
+
+export {
+  nodeEnv,
+  databaseUrl,
+  backendUrl,
+  backendPort,
+  seedPassword,
+  allowDestructiveSeed,
+  jwtSecret,
+  jwtExpiresIn,
+  corsOrigin,
+};

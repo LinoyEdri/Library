@@ -8,19 +8,23 @@
     "node": ">=22.18.0"
   },
   "workspaces": [
+    "shared",
     "backend",
     "frontend"
   ],
   "scripts": {
-    "dev": "concurrently --names \"api,web\" --prefix-colors \"green,blue\" \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "postinstall": "npm run build --prefix shared",
+    "dev": "concurrently --names \"shared,api,web\" --prefix-colors \"magenta,green,blue\" \"npm:dev:shared\" \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:shared": "npm run dev --prefix shared",
     "dev:backend": "npm run dev --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend",
-    "build": "npm run build --prefix backend && npm run build --prefix frontend",
+    "build:shared": "npm run build --prefix shared",
+    "build": "npm run build:shared && npm run build --prefix backend && npm run build --prefix frontend",
     "start": "npm run start --prefix backend",
     "lint": "npm run lint --prefix backend && npm run lint --prefix frontend",
-    "typecheck": "npm run typecheck --prefix backend && npm run typecheck --prefix frontend",
-    "test": "npm run test --prefix backend --if-present && npm run test --prefix frontend --if-present",
-    "clean": "npm run clean --prefix backend && npm run clean --prefix frontend",
+    "typecheck": "npm run build:shared && npm run typecheck --prefix shared && npm run typecheck --prefix backend && npm run typecheck --prefix frontend",
+    "test": "npm run build:shared && npm run test --prefix backend --if-present && npm run test --prefix frontend --if-present",
+    "clean": "npm run clean --prefix shared && npm run clean --prefix backend && npm run clean --prefix frontend",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:generate": "npm run db:generate --prefix backend",
