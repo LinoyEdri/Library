@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { RequestLocation, validate } from "../middlewares/validation/validate.middleware.ts";
-import { loginSchema, registerSchema } from "../schemas/user.schema.ts";
+import { loginSchema, registerSchema } from "@library/shared";
 import { userController } from "../controllers/user.controller.ts";
 import { requireAuth } from "../middlewares/validation/auth.middleware.ts";
 

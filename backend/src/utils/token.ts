@@ -2,7 +2,7 @@ import jwt, { type SignOptions } from 'jsonwebtoken';
 import { jwtExpiresIn, jwtSecret } from '../config/env.ts'; 
 import { UnauthorizedError } from '../types/errors/UnauthorizedError.ts';
 import { ValidationError } from '../types/errors/BadRequestError.ts';
-import { AccessTokenPayload, accessTokenPayloadSchema } from '../schemas/user.schema.ts';
+import { AccessTokenPayload, accessTokenPayloadSchema } from '../schemas/access-token-payload.schema.ts';
 
 export const jwtToken = {
   signAccessToken(payload: AccessTokenPayload): string {

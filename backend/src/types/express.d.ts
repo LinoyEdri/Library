@@ -1,4 +1,4 @@
-import { AccessTokenPayload } from "../schemas/user.schema.ts";
+import type { AccessTokenPayload } from "../schemas/access-token-payload.schema.ts";
 
 declare global {
   namespace Express {

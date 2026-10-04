@@ -1,6 +1,6 @@
 import prisma from "../prisma/prisma.ts";
 import { InternalError } from "../types/errors/InternalError.ts";
-import { RegisterInput } from "../schemas/user.schema.ts";
+import type { RegisterInput } from "@library/shared";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { PrismaErrorCodes } from "../prisma/error-codes.ts";
 import { ConflictError } from "../types/errors/ConflictError.ts";

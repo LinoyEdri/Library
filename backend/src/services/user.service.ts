@@ -1,6 +1,6 @@
 import { RecordStatus } from "@prisma/client";
 import { userRepository } from "../repositories/user.repository.ts";
-import { LoginInput, RegisterInput } from "../schemas/user.schema.ts";
+import type { LoginInput, RegisterInput } from "@library/shared";
 import { LoginUser, SafeUser, toSafeUser } from "../types/dtos/user.dto.ts";
 import { ConflictError } from "../types/errors/ConflictError.ts";
 import { NotFoundError } from "../types/errors/NotFoundError.ts";
