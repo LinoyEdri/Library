@@ -10,7 +10,10 @@ export function DashboardPage() {
 
   return (
     <>
-      <Typography variant="h1" gutterBottom>
+      <Typography
+        variant="h1"
+        gutterBottom
+      >
         {HebrewTexts.placeholders.dashboardWelcome} {currentUser?.firstName}
       </Typography>
 

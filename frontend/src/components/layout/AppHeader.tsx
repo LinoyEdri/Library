@@ -15,37 +15,77 @@ export function AppHeader({ onToggleNavigation }: { onToggleNavigation: () => vo
   const { currentUser, logout } = useAuthentication();
 
   return (
-    <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-      <Toolbar sx={{ gap: 1 }}>
+    <AppBar
+      position="fixed"
+      sx={{
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+      }}
+    >
+      <Toolbar
+        sx={{
+          gap: 1,
+        }}
+      >
         <IconButton
           color="inherit"
           edge="start"
           aria-label="פתיחת תפריט"
           onClick={onToggleNavigation}
-          sx={{ display: { md: 'none' } }}
+          sx={{
+            display: {
+              md: 'none',
+            },
+          }}
         >
           <MenuIcon />
         </IconButton>
 
-        <LocalLibraryIcon sx={{ color: 'warning.main' }} />
+        <LocalLibraryIcon
+          sx={{
+            color: 'warning.main',
+          }}
+        />
 
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{
+            flexGrow: 1,
+          }}
+        >
           {HebrewTexts.applicationName}
         </Typography>
 
         {currentUser && (
-          <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'end' }}>
+          <Box
+            sx={{
+              display: {
+                xs: 'none',
+                sm: 'block',
+              },
+              textAlign: 'end',
+            }}
+          >
             <Typography variant="body2">
               {currentUser.firstName} {currentUser.lastName}
             </Typography>
 
-            <Typography variant="caption" sx={{ opacity: 0.8 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                opacity: 0.8,
+              }}
+            >
               {HebrewTexts.roles[currentUser.role]}
             </Typography>
           </Box>
         )}
 
-        <Button color="inherit" startIcon={<LogoutIcon />} onClick={logout}>
+        <Button
+          color="inherit"
+          startIcon={<LogoutIcon />}
+          onClick={logout}
+        >
           {HebrewTexts.authentication.logout}
         </Button>
       </Toolbar>

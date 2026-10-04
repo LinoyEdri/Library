@@ -7,7 +7,10 @@ import { HebrewTexts } from '../../constants/hebrew-texts';
 export function ComingSoonPage({ title }: { title: string }) {
   return (
     <>
-      <Typography variant="h1" gutterBottom>
+      <Typography
+        variant="h1"
+        gutterBottom
+      >
         {title}
       </Typography>
 

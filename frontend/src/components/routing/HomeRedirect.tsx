@@ -1,11 +1,14 @@
 import { Navigate } from 'react-router';
-import { Permission } from '@library/shared';
-import { RoutePaths } from '../../constants/route-paths';
-import { useCan } from '../../hooks/useCan';
+import { useHomeRedirectPath } from './hooks/useHomeRedirectPath';
 
-// "/" opens the dashboard; viewers have no dashboard, so they start at the books catalog
+// Sends "/" to the user's starting page
 export function HomeRedirect() {
-  const canViewDashboard = useCan(Permission.DASHBOARD_VIEW);
+  const homePath = useHomeRedirectPath();
 
-  return <Navigate to={canViewDashboard ? RoutePaths.DASHBOARD : RoutePaths.BOOKS} replace />;
+  return (
+    <Navigate
+      to={homePath}
+      replace
+    />
+  );
 }

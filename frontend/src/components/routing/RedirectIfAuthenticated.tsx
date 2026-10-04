@@ -11,5 +11,14 @@ export function RedirectIfAuthenticated() {
     return <FullPageLoader />;
   }
 
-  return currentUser ? <Navigate to={RoutePaths.HOME} replace /> : <Outlet />;
+  if (currentUser) {
+    return (
+      <Navigate
+        to={RoutePaths.HOME}
+        replace
+      />
+    );
+  }
+
+  return <Outlet />;
 }

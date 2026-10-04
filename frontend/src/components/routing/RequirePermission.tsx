@@ -7,5 +7,14 @@ import { useCan } from '../../hooks/useCan';
 export function RequirePermission({ permissions }: { permissions: Permission[] }) {
   const isAllowed = useCan(...permissions);
 
-  return isAllowed ? <Outlet /> : <Navigate to={RoutePaths.UNAUTHORIZED} replace />;
+  if (!isAllowed) {
+    return (
+      <Navigate
+        to={RoutePaths.UNAUTHORIZED}
+        replace
+      />
+    );
+  }
+
+  return <Outlet />;
 }

@@ -1,39 +1,43 @@
-import { Link as RouterLink, useMatches } from 'react-router';
+import { Link as RouterLink } from 'react-router';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
+import { useBreadcrumbItems } from './hooks/useBreadcrumbItems';
 
-// Routes add { handle: { breadcrumb: 'title' } } to appear here
-type RouteHandleWithBreadcrumb = { breadcrumb?: string };
-
+// "Home / Books" trail above the page content (hidden on top-level pages)
 export function PageBreadcrumbs() {
-  const routeMatches = useMatches();
+  const breadcrumbItems = useBreadcrumbItems();
 
-  const breadcrumbMatches = routeMatches.filter(
-    (match) => (match.handle as RouteHandleWithBreadcrumb | undefined)?.breadcrumb,
-  );
-
-  if (breadcrumbMatches.length <= 1) {
+  if (breadcrumbItems.length <= 1) {
     return null;
   }
 
   return (
-    <Breadcrumbs aria-label="מיקום בעמוד" sx={{ mb: 2 }}>
-      {breadcrumbMatches.map((match, index) => {
-        const breadcrumbTitle = (match.handle as RouteHandleWithBreadcrumb).breadcrumb;
-
-        const isLastBreadcrumb = index === breadcrumbMatches.length - 1;
-
-        return isLastBreadcrumb ? (
-          <Typography key={match.id} color="text.primary">
-            {breadcrumbTitle}
+    <Breadcrumbs
+      aria-label="מיקום בעמוד"
+      sx={{
+        mb: 2,
+      }}
+    >
+      {breadcrumbItems.map((breadcrumbItem) =>
+        breadcrumbItem.isCurrentPage ? (
+          <Typography
+            key={breadcrumbItem.id}
+            color="text.primary"
+          >
+            {breadcrumbItem.title}
           </Typography>
         ) : (
-          <Link key={match.id} component={RouterLink} to={match.pathname} underline="hover">
-            {breadcrumbTitle}
+          <Link
+            key={breadcrumbItem.id}
+            component={RouterLink}
+            to={breadcrumbItem.path}
+            underline="hover"
+          >
+            {breadcrumbItem.title}
           </Link>
-        );
-      })}
+        ),
+      )}
     </Breadcrumbs>
   );
 }

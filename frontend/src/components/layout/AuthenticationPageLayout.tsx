@@ -21,17 +21,55 @@ export function AuthenticationPageLayout({
   children,
 }: AuthenticationPageLayoutProps) {
   return (
-    <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', p: 2 }}>
-      <Card sx={{ width: '100%', maxWidth }}>
-        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <LocalLibraryIcon sx={{ fontSize: 48, color: 'primary.main' }} />
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'grid',
+        placeItems: 'center',
+        p: 2,
+      }}
+    >
+      <Card
+        sx={{
+          width: '100%',
+          maxWidth,
+        }}
+      >
+        <CardContent
+          sx={{
+            p: {
+              xs: 3,
+              sm: 4,
+            },
+          }}
+        >
+          <Box
+            sx={{
+              textAlign: 'center',
+              mb: 3,
+            }}
+          >
+            <LocalLibraryIcon
+              sx={{
+                fontSize: 48,
+                color: 'primary.main',
+              }}
+            />
 
-            <Typography variant="body2" color="text.secondary">
+            <Typography
+              variant="body2"
+              color="text.secondary"
+            >
               {HebrewTexts.applicationName}
             </Typography>
 
-            <Typography variant="h2" component="h1" sx={{ mt: 1 }}>
+            <Typography
+              variant="h2"
+              component="h1"
+              sx={{
+                mt: 1,
+              }}
+            >
               {title}
             </Typography>
 

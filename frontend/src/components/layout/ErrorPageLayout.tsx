@@ -16,23 +16,54 @@ type ErrorPageLayoutProps = {
 // Full-screen error message (403, 404) with a link back home
 export function ErrorPageLayout({ statusCode, title, description, icon }: ErrorPageLayoutProps) {
   return (
-    <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', p: 2 }}>
-      <Box sx={{ textAlign: 'center', maxWidth: 480 }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'grid',
+        placeItems: 'center',
+        p: 2,
+      }}
+    >
+      <Box
+        sx={{
+          textAlign: 'center',
+          maxWidth: 480,
+        }}
+      >
         {icon}
 
-        <Typography variant="h1" sx={{ color: 'primary.main', fontSize: '4rem' }}>
+        <Typography
+          variant="h1"
+          sx={{
+            color: 'primary.main',
+            fontSize: '4rem',
+          }}
+        >
           {statusCode}
         </Typography>
 
-        <Typography variant="h2" component="h1" gutterBottom>
+        <Typography
+          variant="h2"
+          component="h1"
+          gutterBottom
+        >
           {title}
         </Typography>
 
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+        <Typography
+          color="text.secondary"
+          sx={{
+            mb: 3,
+          }}
+        >
           {description}
         </Typography>
 
-        <Button component={RouterLink} to={RoutePaths.HOME} variant="contained">
+        <Button
+          component={RouterLink}
+          to={RoutePaths.HOME}
+          variant="contained"
+        >
           {HebrewTexts.errors.backToHome}
         </Button>
       </Box>

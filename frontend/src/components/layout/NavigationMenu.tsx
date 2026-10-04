@@ -3,29 +3,21 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { hasAnyPermission, hasPermission } from '@library/shared';
-import { NAVIGATION_ITEMS } from '../../constants/navigation-items';
-import { useAuthentication } from '../../hooks/useAuthentication';
+import { useVisibleNavigationItems } from './hooks/useVisibleNavigationItems';
 
 // Side menu links filtered by the current user's role
 export function NavigationMenu({ onNavigate }: { onNavigate?: () => void }) {
-  const { currentUser } = useAuthentication();
-
-  if (!currentUser) {
-    return null;
-  }
-
-  const visibleItems = NAVIGATION_ITEMS.filter((item) =>
-    hasAnyPermission(currentUser.role, item.requiredPermissions),
-  );
+  const visibleNavigationItems = useVisibleNavigationItems();
 
   return (
-    <List component="nav" aria-label="ניווט ראשי" sx={{ px: 1 }}>
-      {visibleItems.map((item) => {
-        const isBrowseOnly =
-          item.browseOnlyUnlessPermission !== undefined &&
-          !hasPermission(currentUser.role, item.browseOnlyUnlessPermission);
-
+    <List
+      component="nav"
+      aria-label="ניווט ראשי"
+      sx={{
+        px: 1,
+      }}
+    >
+      {visibleNavigationItems.map((item) => {
         const ItemIcon = item.icon;
 
         return (
@@ -37,15 +29,24 @@ export function NavigationMenu({ onNavigate }: { onNavigate?: () => void }) {
             sx={{
               borderRadius: 2,
               mb: 0.5,
-              '&.active': { bgcolor: 'primary.main', color: 'primary.contrastText' },
-              '&.active .MuiListItemIcon-root': { color: 'primary.contrastText' },
+              '&.active': {
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
+              },
+              '&.active .MuiListItemIcon-root': {
+                color: 'primary.contrastText',
+              },
             }}
           >
-            <ListItemIcon sx={{ minWidth: 40 }}>
+            <ListItemIcon
+              sx={{
+                minWidth: 40,
+              }}
+            >
               <ItemIcon />
             </ListItemIcon>
 
-            <ListItemText primary={isBrowseOnly ? item.browseOnlyLabel : item.label} />
+            <ListItemText primary={item.displayedLabel} />
           </ListItemButton>
         );
       })}
