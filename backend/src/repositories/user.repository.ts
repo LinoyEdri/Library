@@ -1,9 +1,10 @@
-import prisma from "../prisma/prisma.ts";
-import { InternalError } from "../types/errors/InternalError.ts";
 import type { RegisterInput } from "@library/shared";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
+import prisma from "../prisma/prisma.ts";
+import type { DatabaseClient } from "../prisma/database-client.ts";
 import { PrismaErrorCodes } from "../prisma/error-codes.ts";
 import { ConflictError } from "../types/errors/ConflictError.ts";
+import { InternalError } from "../types/errors/InternalError.ts";
 import type { UserWithAddress } from "../types/dtos/user.dto.ts";
 
 // Every query loads the address too, so callers can build a SafeUser directly
@@ -50,9 +51,13 @@ export const userRepository = {
         }
     },
 
-    async updateLastLoginDate(id: string, lastLoginDate: Date): Promise<UserWithAddress> {
+    async updateLastLoginDate(
+        id: string,
+        lastLoginDate: Date,
+        databaseClient: DatabaseClient = prisma,
+    ): Promise<UserWithAddress> {
         try {
-            return await prisma.user.update({
+            return await databaseClient.user.update({
                 where: { id },
                 data: { lastLoginDate },
                 include: includeAddress,
@@ -62,32 +67,32 @@ export const userRepository = {
         }
     },
 
-    // Creates the address and the user together - if the user fails, the address is rolled back
-    async createUser(userDto: RegisterInput, passwordHash: string): Promise<UserWithAddress> {
+    // Nested create: the address and user are written in one atomic statement
+    async createUserWithAddress(
+        userDto: RegisterInput,
+        passwordHash: string,
+        databaseClient: DatabaseClient = prisma,
+    ): Promise<UserWithAddress> {
         try {
-            return await prisma.$transaction(async (tx) => {
-                const address = await tx.address.create({
-                    data: {
-                        street: userDto.address.street,
-                        houseNumber: userDto.address.houseNumber,
-                        apartmentOrUnit: userDto.address.apartmentOrUnit,
-                        city: userDto.address.city,
-                        postalCode: userDto.address.postalCode,
-                        country: userDto.address.country,
+            return await databaseClient.user.create({
+                data: {
+                    firstName: userDto.firstName,
+                    lastName: userDto.lastName,
+                    email: userDto.email,
+                    passwordHash,
+                    phoneNumber: userDto.phoneNumber,
+                    address: {
+                        create: {
+                            street: userDto.address.street,
+                            houseNumber: userDto.address.houseNumber,
+                            apartmentOrUnit: userDto.address.apartmentOrUnit,
+                            city: userDto.address.city,
+                            postalCode: userDto.address.postalCode,
+                            country: userDto.address.country,
+                        },
                     },
-                });
-
-                return await tx.user.create({
-                    data: {
-                        firstName: userDto.firstName,
-                        lastName: userDto.lastName,
-                        email: userDto.email,
-                        passwordHash,
-                        phoneNumber: userDto.phoneNumber,
-                        addressId: address.id,
-                    },
-                    include: includeAddress,
-                });
+                },
+                include: includeAddress,
             });
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError
@@ -98,4 +103,4 @@ export const userRepository = {
             throw new InternalError("Account registration failed due to an internal storage issue");
         }
     },
-}
+};

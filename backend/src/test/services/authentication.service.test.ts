@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { RecordStatus, Role } from '@prisma/client';
+import { ActionType, RecordStatus, Role } from '@prisma/client';
 import { bcryptPassword } from '../../utils/password-hash.ts';
 import { authenticationService, INVALID_LOGIN_MESSAGE } from '../../services/authentication.service.ts';
 import { userRepository } from '../../repositories/user.repository.ts';
@@ -7,10 +7,19 @@ import { ConflictError } from '../../types/errors/ConflictError.ts';
 import { NotFoundError } from '../../types/errors/NotFoundError.ts';
 import { UnauthorizedError } from '../../types/errors/UnauthorizedError.ts';
 import type { UserWithAddress } from '../../types/dtos/user.dto.ts';
+import { auditLogService } from '../../services/audit-log.service.ts';
+import { runInDatabaseTransaction } from '../../prisma/run-in-database-transaction.ts';
 
-// Mock the repository and hashing modules - no real DB or bcrypt calls happen
+// Mock the repository, hashing, audit and transaction modules - no real DB or bcrypt calls happen
 vi.mock('../../repositories/user.repository.ts');
 vi.mock('../../utils/password-hash.ts');
+vi.mock('../../services/audit-log.service.ts');
+vi.mock('../../prisma/run-in-database-transaction.ts');
+
+// The fake transaction simply runs the work with a dummy client
+const runWorkWithoutRealTransaction = () => {
+  vi.mocked(runInDatabaseTransaction).mockImplementation((work) => work({} as never));
+};
 
 const activeUserWithAddress: UserWithAddress = {
   id: 'user-1',
@@ -43,7 +52,8 @@ const correctCredentials = { email: 'test@example.com', password: 'correct-passw
 
 describe('authenticationService.login', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    runWorkWithoutRealTransaction();
   });
 
   it('returns a bearer token, expiry and the safe user on valid credentials', async () => {
@@ -70,7 +80,44 @@ describe('authenticationService.login', () => {
 
     await authenticationService.login(correctCredentials);
 
-    expect(userRepository.updateLastLoginDate).toHaveBeenCalledWith('user-1', expect.any(Date));
+    expect(userRepository.updateLastLoginDate).toHaveBeenCalledWith('user-1', expect.any(Date), expect.anything());
+  });
+
+  it('writes a USER_LOGIN_SUCCEEDED audit entry on success', async () => {
+    vi.mocked(userRepository.findByEmail).mockResolvedValue(activeUserWithAddress);
+    vi.mocked(bcryptPassword.comparePassword).mockResolvedValue(true);
+    vi.mocked(userRepository.updateLastLoginDate).mockResolvedValue(activeUserWithAddress);
+
+    await authenticationService.login(correctCredentials);
+
+    expect(auditLogService.recordAuditLogEntry).toHaveBeenCalledWith(
+      expect.objectContaining({ actionType: ActionType.USER_LOGIN_SUCCEEDED, actionUserId: 'user-1' }),
+      expect.anything(),
+    );
+  });
+
+  it('writes a USER_LOGIN_FAILED audit entry for a wrong password on a known account', async () => {
+    vi.mocked(userRepository.findByEmail).mockResolvedValue(activeUserWithAddress);
+    vi.mocked(bcryptPassword.comparePassword).mockResolvedValue(false);
+
+    await expect(authenticationService.login(correctCredentials)).rejects.toThrow(UnauthorizedError);
+
+    expect(auditLogService.recordAuditLogEntry).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actionType: ActionType.USER_LOGIN_FAILED,
+        additionalContext: { reason: 'WRONG_PASSWORD' },
+      }),
+    );
+  });
+
+  it('still returns the generic 401 when the failed-login audit write fails', async () => {
+    vi.mocked(userRepository.findByEmail).mockResolvedValue(activeUserWithAddress);
+    vi.mocked(bcryptPassword.comparePassword).mockResolvedValue(false);
+    vi.mocked(auditLogService.recordAuditLogEntry).mockRejectedValue(new Error('database down'));
+
+    await expect(authenticationService.login(correctCredentials)).rejects.toThrow(
+      new UnauthorizedError(INVALID_LOGIN_MESSAGE),
+    );
   });
 
   it('throws the generic UnauthorizedError for a non-existent email', async () => {
@@ -118,7 +165,8 @@ describe('authenticationService.login', () => {
 
 describe('authenticationService.register', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    runWorkWithoutRealTransaction();
   });
 
   const registerInput = {
@@ -135,19 +183,33 @@ describe('authenticationService.register', () => {
 
     await expect(authenticationService.register(registerInput)).rejects.toThrow(ConflictError);
 
-    expect(userRepository.createUser).not.toHaveBeenCalled();
+    expect(userRepository.createUserWithAddress).not.toHaveBeenCalled();
   });
 
   it('hashes the password and returns a safe user', async () => {
     vi.mocked(userRepository.findByEmail).mockResolvedValue(null);
     vi.mocked(bcryptPassword.hashPassword).mockResolvedValue('new-hash');
-    vi.mocked(userRepository.createUser).mockResolvedValue(activeUserWithAddress);
+    vi.mocked(userRepository.createUserWithAddress).mockResolvedValue(activeUserWithAddress);
 
     const safeUser = await authenticationService.register(registerInput);
 
-    expect(userRepository.createUser).toHaveBeenCalledWith(registerInput, 'new-hash');
+    expect(userRepository.createUserWithAddress).toHaveBeenCalledWith(registerInput, 'new-hash', expect.anything());
     expect(safeUser).not.toHaveProperty('passwordHash');
     expect(safeUser.address.city).toBe('Tel Aviv');
+  });
+
+  it('writes a USER_CREATED audit entry inside the registration transaction', async () => {
+    vi.mocked(userRepository.findByEmail).mockResolvedValue(null);
+    vi.mocked(bcryptPassword.hashPassword).mockResolvedValue('new-hash');
+    vi.mocked(userRepository.createUserWithAddress).mockResolvedValue(activeUserWithAddress);
+
+    await authenticationService.register(registerInput);
+
+    expect(runInDatabaseTransaction).toHaveBeenCalledTimes(1);
+    expect(auditLogService.recordAuditLogEntry).toHaveBeenCalledWith(
+      expect.objectContaining({ actionType: ActionType.USER_CREATED, affectedRecordId: 'user-1' }),
+      expect.anything(),
+    );
   });
 });
 
