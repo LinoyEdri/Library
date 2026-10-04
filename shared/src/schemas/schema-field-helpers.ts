@@ -29,7 +29,8 @@ export const createStringField = ({
     .string()
     .trim()
     .min(min, {
-      message: min === 1 ? `${fieldName} הוא שדה חובה` : `${fieldName} חייב להכיל לפחות ${min} תווים`,
+      message:
+        min === 1 ? `${fieldName} הוא שדה חובה` : `${fieldName} חייב להכיל לפחות ${min} תווים`,
     })
     .max(max, { message: `${fieldName} יכול להכיל עד ${max} תווים` });
 
