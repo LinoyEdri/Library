@@ -6,37 +6,37 @@ export const addressSchema = z.object({
   street: createStringField({
     min: 1,
     max: 255,
-    fieldName: 'Street',
+    fieldName: 'רחוב',
     regex: regexTypes.lettersOnly,
-    regexMessage: 'Street name must contain letters only',
+    regexMessage: 'שם הרחוב יכול להכיל אותיות בלבד',
   }),
 
   houseNumber: createStringField({
     min: 1,
     max: 50,
-    fieldName: 'House number',
+    fieldName: 'מספר בית',
   }),
 
   apartmentOrUnit: createStringField({
     min: 1,
     max: 50,
-    fieldName: 'Apartment/Unit',
+    fieldName: 'דירה',
   }),
 
   city: createStringField({
     min: 1,
     max: 100,
-    fieldName: 'City',
+    fieldName: 'עיר',
     regex: regexTypes.lettersOnly,
-    regexMessage: 'City name must contain letters only',
+    regexMessage: 'שם העיר יכול להכיל אותיות בלבד',
   }),
 
   postalCode: createStringField({
     min: 1,
     max: 7,
-    fieldName: 'Postal code',
+    fieldName: 'מיקוד',
     regex: regexTypes.digitsOnly,
-    regexMessage: 'Postal code must contain digits only',
+    regexMessage: 'מיקוד יכול להכיל ספרות בלבד',
   })
     .nullable()
     .optional(),
@@ -44,9 +44,9 @@ export const addressSchema = z.object({
   country: createStringField({
     min: 1,
     max: 100,
-    fieldName: 'Country',
+    fieldName: 'מדינה',
     regex: regexTypes.lettersOnly,
-    regexMessage: 'Country name must contain letters only',
+    regexMessage: 'שם המדינה יכול להכיל אותיות בלבד',
   }).default('Israel'),
 });
 
