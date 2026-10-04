@@ -9,7 +9,7 @@ const TOKEN_TYPE = "Bearer";
 
 export const requireAuth = (
     req: Request,
-    res: Response,
+    _res: Response,
     next: NextFunction
 ) => {
     const authHeader = req.headers.authorization;
@@ -27,6 +27,7 @@ export const requireAuth = (
     try {
         const payload = jwtToken.verifyAccessToken(token);
         req.user = payload;
+        
         return next();
     } catch (error) {
         if (error instanceof AppError) {
