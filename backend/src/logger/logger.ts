@@ -4,8 +4,15 @@ import { requestContext } from '../utils/context.ts';
 
 const isDevelopment = nodeEnv === 'development';
 
+// Verbose in development, quiet in tests, normal in production
+const logLevelByEnvironment = {
+  development: 'trace',
+  test: 'silent',
+  production: 'info',
+} as const;
+
 export const logger = pino({
-  level: isDevelopment ? 'trace' : 'info',
+  level: logLevelByEnvironment[nodeEnv],
 
   // ⚡ The Magic Mixin: Automatically runs on every single log line
   mixin() {
