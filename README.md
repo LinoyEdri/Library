@@ -443,26 +443,29 @@ ISBN-10 check digit can be the letter X.
 Authors, publishers and categories are records in their own right, not text
 fields on a book.
 
-An **Author** contains 
+An **Author** contains
+
 - author ID
 - first name
 - last name
 - biography
 - status,
-and the usual creation, update, disable and created-by fields.
+  and the usual creation, update, disable and created-by fields.
 
-A **Publisher** contains 
-- publisher ID 
+A **Publisher** contains
+
+- publisher ID
 - name
 - description
 - status
-and the same lifecycle fields. Publisher names are unique.
+  and the same lifecycle fields. Publisher names are unique.
 
-A **Category** contains 
+A **Category** contains
+
 - category ID
 - name
 - status
-and the same lifecycle fields. Category names are unique.
+  and the same lifecycle fields. Category names are unique.
 
 All three follow the same rules as books:
 

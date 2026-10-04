@@ -6,12 +6,12 @@ import type { ApiErrorDetail, ApiErrorResponse, ApiSuccessResponse } from '@libr
 export type { ApiSuccessResponse, ApiErrorDetail, ApiErrorResponse };
 
 export const ApiResponse = {
-  success: <T> (
+  success: <T>(
     data: T,
-    message = "Success",
+    message = 'Success',
     code = getStatusText(status.OK),
-    meta?: unknown
-  ) : ApiSuccessResponse<T> => {
+    meta?: unknown,
+  ): ApiSuccessResponse<T> => {
     return {
       success: true,
       code,
@@ -25,7 +25,7 @@ export const ApiResponse = {
     message: string,
     code = getStatusText(status.INTERNAL_SERVER_ERROR),
     details?: ApiErrorDetail[],
-    requestId?: string
+    requestId?: string,
   ): ApiErrorResponse => {
     return {
       success: false,
@@ -35,6 +35,6 @@ export const ApiResponse = {
         ...(details && { details }), // Only include details if provided
       },
       ...(requestId && { requestId }), // Only include requestId if provided
-    }  
-  }
+    };
+  },
 };

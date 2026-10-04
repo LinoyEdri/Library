@@ -24,7 +24,11 @@ export const openapiComponentSchemas = {
           },
         },
       },
-      requestId: { type: 'string', format: 'uuid', example: '688c03a8-affa-466e-9fa1-bebef9d212d9' },
+      requestId: {
+        type: 'string',
+        format: 'uuid',
+        example: '688c03a8-affa-466e-9fa1-bebef9d212d9',
+      },
     },
   },
 
@@ -48,7 +52,13 @@ export const openapiComponentSchemas = {
       houseNumber: { type: 'string', minLength: 1, maxLength: 50, example: '12' },
       apartmentOrUnit: { type: 'string', minLength: 1, maxLength: 50, example: '4' },
       city: { type: 'string', minLength: 1, maxLength: 100, example: 'תל אביב' },
-      postalCode: { type: 'string', nullable: true, maxLength: 7, pattern: '^[0-9]+$', example: '6100000' },
+      postalCode: {
+        type: 'string',
+        nullable: true,
+        maxLength: 7,
+        pattern: '^[0-9]+$',
+        example: '6100000',
+      },
       country: { type: 'string', maxLength: 100, default: 'Israel', example: 'Israel' },
     },
   },

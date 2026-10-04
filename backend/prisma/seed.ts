@@ -12,7 +12,7 @@ import { Prisma, Role, CopyStatus } from '@prisma/client';
 import { EnvironmentConfigError } from '../src/types/errors/EnvironmentConfigError.ts';
 import { logger } from '../src/logger/logger.ts';
 import { seedPassword, nodeEnv, allowDestructiveSeed } from '../src/config/env.ts';
-import { bcryptPassword } from "../src/utils/password-hash.ts"
+import { bcryptPassword } from '../src/utils/password-hash.ts';
 
 /**
  * Delete every row, children before parents.

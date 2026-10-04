@@ -11,12 +11,7 @@ healthRouter.get('/', (_req, res) => {
     timestamp: new Date().toISOString(),
   };
 
-  res.status(statusCodes.OK).json(
-    ApiResponse.success(
-      healthData, 
-      'Service is healthy'
-    ),
-  );
+  res.status(statusCodes.OK).json(ApiResponse.success(healthData, 'Service is healthy'));
 });
 
 export default healthRouter;

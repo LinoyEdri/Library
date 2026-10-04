@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ActionType, RecordStatus, Role } from '@prisma/client';
 import { bcryptPassword } from '../../utils/password-hash.ts';
-import { authenticationService, INVALID_LOGIN_MESSAGE } from '../../services/authentication.service.ts';
+import {
+  authenticationService,
+  INVALID_LOGIN_MESSAGE,
+} from '../../services/authentication.service.ts';
 import { userRepository } from '../../repositories/user.repository.ts';
 import { ConflictError } from '../../types/errors/ConflictError.ts';
 import { NotFoundError } from '../../types/errors/NotFoundError.ts';
@@ -80,7 +83,11 @@ describe('authenticationService.login', () => {
 
     await authenticationService.login(correctCredentials);
 
-    expect(userRepository.updateLastLoginDate).toHaveBeenCalledWith('user-1', expect.any(Date), expect.anything());
+    expect(userRepository.updateLastLoginDate).toHaveBeenCalledWith(
+      'user-1',
+      expect.any(Date),
+      expect.anything(),
+    );
   });
 
   it('writes a USER_LOGIN_SUCCEEDED audit entry on success', async () => {
@@ -91,7 +98,10 @@ describe('authenticationService.login', () => {
     await authenticationService.login(correctCredentials);
 
     expect(auditLogService.recordAuditLogEntry).toHaveBeenCalledWith(
-      expect.objectContaining({ actionType: ActionType.USER_LOGIN_SUCCEEDED, actionUserId: 'user-1' }),
+      expect.objectContaining({
+        actionType: ActionType.USER_LOGIN_SUCCEEDED,
+        actionUserId: 'user-1',
+      }),
       expect.anything(),
     );
   });
@@ -100,7 +110,9 @@ describe('authenticationService.login', () => {
     vi.mocked(userRepository.findByEmail).mockResolvedValue(activeUserWithAddress);
     vi.mocked(bcryptPassword.comparePassword).mockResolvedValue(false);
 
-    await expect(authenticationService.login(correctCredentials)).rejects.toThrow(UnauthorizedError);
+    await expect(authenticationService.login(correctCredentials)).rejects.toThrow(
+      UnauthorizedError,
+    );
 
     expect(auditLogService.recordAuditLogEntry).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -133,7 +145,9 @@ describe('authenticationService.login', () => {
     vi.mocked(userRepository.findByEmail).mockResolvedValue(null);
     vi.mocked(bcryptPassword.comparePassword).mockResolvedValue(false);
 
-    await expect(authenticationService.login(correctCredentials)).rejects.toThrow(UnauthorizedError);
+    await expect(authenticationService.login(correctCredentials)).rejects.toThrow(
+      UnauthorizedError,
+    );
 
     expect(bcryptPassword.comparePassword).toHaveBeenCalledTimes(1);
   });
@@ -193,7 +207,11 @@ describe('authenticationService.register', () => {
 
     const safeUser = await authenticationService.register(registerInput);
 
-    expect(userRepository.createUserWithAddress).toHaveBeenCalledWith(registerInput, 'new-hash', expect.anything());
+    expect(userRepository.createUserWithAddress).toHaveBeenCalledWith(
+      registerInput,
+      'new-hash',
+      expect.anything(),
+    );
     expect(safeUser).not.toHaveProperty('passwordHash');
     expect(safeUser.address.city).toBe('Tel Aviv');
   });

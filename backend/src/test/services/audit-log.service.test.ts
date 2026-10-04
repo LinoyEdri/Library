@@ -34,7 +34,10 @@ describe('auditLogService.recordAuditLogEntry', () => {
   it('stores dates as ISO strings', async () => {
     const changeDate = new Date('2026-01-01T10:00:00.000Z');
 
-    await auditLogService.recordAuditLogEntry({ ...baseEntry, newValue: { disabledDate: changeDate } });
+    await auditLogService.recordAuditLogEntry({
+      ...baseEntry,
+      newValue: { disabledDate: changeDate },
+    });
 
     const savedData = vi.mocked(auditLogRepository.createAuditLogEntry).mock.calls[0][0];
 
@@ -56,6 +59,9 @@ describe('auditLogService.recordAuditLogEntry', () => {
 
     await auditLogService.recordAuditLogEntry(baseEntry, fakeTransactionClient);
 
-    expect(auditLogRepository.createAuditLogEntry).toHaveBeenCalledWith(expect.any(Object), fakeTransactionClient);
+    expect(auditLogRepository.createAuditLogEntry).toHaveBeenCalledWith(
+      expect.any(Object),
+      fakeTransactionClient,
+    );
   });
 });

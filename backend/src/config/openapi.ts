@@ -37,10 +37,7 @@ const openapiDefinition: swaggerJSDoc.Options = {
       schemas: openapiComponentSchemas,
     },
   },
-  apis: [
-    fromHere('../routes/**/*.{ts,js}'),
-    fromHere('../routes/docs/**/*.{ts,js}'),
-  ],
+  apis: [fromHere('../routes/**/*.{ts,js}'), fromHere('../routes/docs/**/*.{ts,js}')],
 };
 
 export const openapiDocument = swaggerJSDoc(openapiDefinition);

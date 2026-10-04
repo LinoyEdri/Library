@@ -9,37 +9,39 @@ import cors from 'cors';
 import { apiRouter } from './routes/index.ts';
 
 export function createApp() {
-    const app = express();
+  const app = express();
 
-    // Security: Hide Express framework details
-    app.disable('x-powered-by'); 
+  // Security: Hide Express framework details
+  app.disable('x-powered-by');
 
-    // Security headers
-    app.use(helmet()); 
+  // Security headers
+  app.use(helmet());
 
-    app.use(cors({
-        origin: corsOrigin,
-    }))
+  app.use(
+    cors({
+      origin: corsOrigin,
+    }),
+  );
 
-    // 1. Global JSON Middleware
-    app.use(express.json());
-    // For parsing application/x-www-form-urlencoded
-    app.use(express.urlencoded({ extended: true })); 
+  // 1. Global JSON Middleware
+  app.use(express.json());
+  // For parsing application/x-www-form-urlencoded
+  app.use(express.urlencoded({ extended: true }));
 
-    // 2. ⚡ Request ID Context Middleware
-    app.use(requestIdMiddleware);
+  // 2. ⚡ Request ID Context Middleware
+  app.use(requestIdMiddleware);
 
-    // 3. Performance & Logging Stopwatch Middleware
-    app.use(requestLoggerMiddleware);
-        
-    // 4. API Routes
-    app.use('/api', apiRouter);
+  // 3. Performance & Logging Stopwatch Middleware
+  app.use(requestLoggerMiddleware);
 
-    // 5. Not Found Middleware
-    app.use(notFoundMiddleware);
+  // 4. API Routes
+  app.use('/api', apiRouter);
 
-    // 6. Error Handling Middleware
-    app.use(errorMiddleware);
+  // 5. Not Found Middleware
+  app.use(notFoundMiddleware);
 
-    return app;
+  // 6. Error Handling Middleware
+  app.use(errorMiddleware);
+
+  return app;
 }
