@@ -1,5 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
+import { StatusCodes } from 'http-status-codes';
 import { ActionType, RecordStatus, Role } from '@prisma/client';
 import { createApp } from '../../app.ts';
 import {
@@ -43,7 +44,7 @@ describe('POST /api/auth/register', () => {
       .post('/api/auth/register')
       .send(validRegistrationBody);
 
-    expect(response.status).toBe(201);
+    expect(response.status).toBe(StatusCodes.CREATED);
     expect(response.body.success).toBe(true);
     expect(response.body.data.email).toBe('dana.cohen@example.com');
     expect(response.body.data.role).toBe(Role.VIEWER);
@@ -69,7 +70,7 @@ describe('POST /api/auth/register', () => {
       .post('/api/auth/register')
       .send(validRegistrationBody);
 
-    expect(response.status).toBe(409);
+    expect(response.status).toBe(StatusCodes.CONFLICT);
     expect(response.body.success).toBe(false);
   });
 
@@ -78,7 +79,7 @@ describe('POST /api/auth/register', () => {
       .post('/api/auth/register')
       .send({ ...validRegistrationBody, email: 'not-an-email', firstName: 'Dana1' });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(StatusCodes.BAD_REQUEST);
     expect(response.body.error.details.map((detail: { field: string }) => detail.field)).toEqual(
       expect.arrayContaining(['email', 'firstName']),
     );
@@ -93,7 +94,7 @@ describe('POST /api/auth/login', () => {
       .post('/api/auth/login')
       .send({ email: user.email, password: TEST_USER_PASSWORD });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(StatusCodes.OK);
     expect(response.body.data.tokenType).toBe('Bearer');
     expect(response.body.data.accessToken).toEqual(expect.any(String));
     expect(response.body.data.expiresAt).toEqual(expect.any(String));
@@ -129,8 +130,8 @@ describe('POST /api/auth/login', () => {
       .post('/api/auth/login')
       .send({ email: 'nobody@example.com', password: TEST_USER_PASSWORD });
 
-    expect(wrongPasswordResponse.status).toBe(401);
-    expect(unknownEmailResponse.status).toBe(401);
+    expect(wrongPasswordResponse.status).toBe(StatusCodes.UNAUTHORIZED);
+    expect(unknownEmailResponse.status).toBe(StatusCodes.UNAUTHORIZED);
     expect(wrongPasswordResponse.body.message).toBe(unknownEmailResponse.body.message);
   });
 
@@ -153,7 +154,7 @@ describe('POST /api/auth/login', () => {
       .post('/api/auth/login')
       .send({ email: user.email, password: TEST_USER_PASSWORD });
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
   });
 });
 
@@ -165,7 +166,7 @@ describe('GET /api/auth/me', () => {
       .get('/api/auth/me')
       .set('Authorization', authorizationHeaderFor(user));
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(StatusCodes.OK);
     expect(response.body.data.id).toBe(user.id);
     expect(response.body.data.role).toBe(Role.MEMBER);
   });
@@ -173,7 +174,7 @@ describe('GET /api/auth/me', () => {
   it('returns 401 without a token', async () => {
     const response = await request(application).get('/api/auth/me');
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   it('returns 401 for a malformed or tampered token', async () => {
@@ -189,8 +190,8 @@ describe('GET /api/auth/me', () => {
       .get('/api/auth/me')
       .set('Authorization', 'Bearer');
 
-    expect(tamperedResponse.status).toBe(401);
-    expect(malformedResponse.status).toBe(401);
+    expect(tamperedResponse.status).toBe(StatusCodes.UNAUTHORIZED);
+    expect(malformedResponse.status).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   it('returns 401 once the account is disabled, even with a still-valid token', async () => {
@@ -204,6 +205,6 @@ describe('GET /api/auth/me', () => {
       .get('/api/auth/me')
       .set('Authorization', authorizationHeader);
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
   });
 });

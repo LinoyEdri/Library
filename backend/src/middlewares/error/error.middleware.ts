@@ -23,8 +23,8 @@ function getErrorStatusCode(error: unknown): number {
   } else if (
     isErrorWithStatusCode(error) &&
     typeof error.statusCode === 'number' &&
-    error.statusCode >= 400 &&
-    error.statusCode < 600
+    error.statusCode >= StatusCodes.BAD_REQUEST &&
+    error.statusCode <= StatusCodes.NETWORK_AUTHENTICATION_REQUIRED
   ) {
     return error.statusCode;
   }
@@ -33,7 +33,7 @@ function getErrorStatusCode(error: unknown): number {
 }
 
 function getErrorMessage(error: unknown, statusCode: number): string {
-  if (statusCode >= 500) {
+  if (statusCode >= StatusCodes.INTERNAL_SERVER_ERROR) {
     return 'An internal server error occurred';
   } else if (error instanceof AppError) {
     return error.message;

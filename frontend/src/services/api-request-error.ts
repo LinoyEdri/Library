@@ -1,6 +1,9 @@
 import type { ApiErrorDetail } from '@library/shared';
 
-// Error thrown by every API call. statusCode is 0 when the server could not be reached.
+// Not an HTTP status: used when the server could not be reached at all
+export const NETWORK_ERROR_STATUS_CODE = 0;
+
+// Error thrown by every API call
 export class ApiRequestError extends Error {
   readonly statusCode: number;
   readonly fieldErrors: ApiErrorDetail[];

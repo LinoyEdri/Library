@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes';
 import LockIcon from '@mui/icons-material/Lock';
 import { ErrorPageLayout } from '../../components/layout/ErrorPageLayout';
 import { HebrewTexts } from '../../constants/hebrew-texts';
@@ -6,10 +7,17 @@ import { HebrewTexts } from '../../constants/hebrew-texts';
 export function UnauthorizedPage() {
   return (
     <ErrorPageLayout
-      statusCode={403}
+      statusCode={StatusCodes.FORBIDDEN}
       title={HebrewTexts.errors.unauthorizedTitle}
       description={HebrewTexts.errors.unauthorizedDescription}
-      icon={<LockIcon sx={{ fontSize: 56, color: 'warning.main' }} />}
+      icon={
+        <LockIcon
+          sx={{
+            fontSize: 56,
+            color: 'warning.main',
+          }}
+        />
+      }
     />
   );
 }

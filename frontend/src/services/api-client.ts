@@ -1,7 +1,8 @@
 import axios, { type AxiosRequestConfig } from 'axios';
 import type { ApiErrorResponse, ApiSuccessResponse } from '@library/shared';
 import { accessTokenStorage } from './access-token-storage';
-import { ApiRequestError } from './api-request-error';
+import { StatusCodes } from 'http-status-codes';
+import { ApiRequestError, NETWORK_ERROR_STATUS_CODE } from './api-request-error';
 
 // Called when a logged-in request gets 401 (token expired, account disabled)
 let handleExpiredSession: () => void = () => {};
@@ -28,14 +29,14 @@ apiClient.interceptors.response.use(
 
   (error) => {
     if (!axios.isAxiosError<ApiErrorResponse>(error) || !error.response) {
-      return Promise.reject(new ApiRequestError('Network error', 0));
+      return Promise.reject(new ApiRequestError('Network error', NETWORK_ERROR_STATUS_CODE));
     }
 
     const { status, data, config } = error.response;
 
     const requestWasAuthenticated = Boolean(config.headers?.Authorization);
 
-    if (status === 401 && requestWasAuthenticated) {
+    if (status === StatusCodes.UNAUTHORIZED && requestWasAuthenticated) {
       handleExpiredSession();
     }
 

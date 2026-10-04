@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
 import { ErrorPageLayout } from '../../components/layout/ErrorPageLayout';
 import { HebrewTexts } from '../../constants/hebrew-texts';
@@ -6,10 +7,17 @@ import { HebrewTexts } from '../../constants/hebrew-texts';
 export function NotFoundPage() {
   return (
     <ErrorPageLayout
-      statusCode={404}
+      statusCode={StatusCodes.NOT_FOUND}
       title={HebrewTexts.errors.notFoundTitle}
       description={HebrewTexts.errors.notFoundDescription}
-      icon={<SearchOffIcon sx={{ fontSize: 56, color: 'warning.main' }} />}
+      icon={
+        <SearchOffIcon
+          sx={{
+            fontSize: 56,
+            color: 'warning.main',
+          }}
+        />
+      }
     />
   );
 }
