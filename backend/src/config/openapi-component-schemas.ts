@@ -174,4 +174,96 @@ export const openapiComponentSchemas = {
       { $ref: '#/components/schemas/CategoryDetails' },
     ],
   },
+  BookDetailsInput: {
+    type: 'object',
+    required: ['title', 'publisherId', 'authorIds', 'language'],
+    properties: {
+      title: { type: 'string', maxLength: 300, example: 'סיפור על אהבה וחושך' },
+      isbn: {
+        type: 'string',
+        nullable: true,
+        description: 'ISBN-10 or ISBN-13 with a valid check digit; hyphens allowed',
+        example: '978-965-00-0001-1',
+      },
+      publisherId: { type: 'string', format: 'uuid' },
+      authorIds: {
+        type: 'array',
+        minItems: 1,
+        items: { type: 'string', format: 'uuid' },
+        description: 'The first author is the primary author',
+      },
+      categoryIds: { type: 'array', items: { type: 'string', format: 'uuid' } },
+      publicationYear: { type: 'integer', nullable: true, example: 2002 },
+      language: { type: 'string', maxLength: 50, example: 'עברית' },
+      imageUrl: { type: 'string', description: 'Image URL or empty string' },
+      description: { type: 'string', nullable: true, maxLength: 5000 },
+    },
+  },
+
+  BookCopy: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      barcode: { type: 'string', example: 'LIB-000001' },
+      status: { type: 'string', enum: ['AVAILABLE', 'ON_LOAN', 'DISABLED', 'LOST', 'DAMAGED'] },
+      acquisitionDate: { type: 'string', format: 'date-time' },
+      updatedDate: { type: 'string', format: 'date-time' },
+      disabledDate: { type: 'string', format: 'date-time', nullable: true },
+    },
+  },
+
+  BookSummary: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      title: { type: 'string' },
+      isbn: { type: 'string', nullable: true },
+      language: { type: 'string' },
+      publicationYear: { type: 'integer', nullable: true },
+      imageUrl: { type: 'string' },
+      status: { $ref: '#/components/schemas/RecordStatus' },
+      publisher: {
+        type: 'object',
+        properties: { id: { type: 'string' }, name: { type: 'string' } },
+      },
+      authors: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            firstName: { type: 'string' },
+            lastName: { type: 'string' },
+            isPrimaryAuthor: { type: 'boolean' },
+          },
+        },
+      },
+      categories: {
+        type: 'array',
+        items: { type: 'object', properties: { id: { type: 'string' }, name: { type: 'string' } } },
+      },
+      availableCopies: { type: 'integer', description: 'Copies on the shelf now' },
+      totalCopies: { type: 'integer', description: 'Copies in circulation (available + on loan)' },
+    },
+  },
+
+  BookDetails: {
+    allOf: [
+      { $ref: '#/components/schemas/BookSummary' },
+      {
+        type: 'object',
+        properties: {
+          description: { type: 'string', nullable: true },
+          createdDate: { type: 'string', format: 'date-time' },
+          updatedDate: { type: 'string', format: 'date-time' },
+          disabledDate: { type: 'string', format: 'date-time', nullable: true },
+          copies: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/BookCopy' },
+            description: 'Only for staff',
+          },
+        },
+      },
+    ],
+  },
 };

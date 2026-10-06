@@ -29,6 +29,8 @@ const openapiDefinition: swaggerJSDoc.Options = {
       { name: 'Authors', description: 'Book authors (everyone views, admins manage)' },
       { name: 'Publishers', description: 'Publishers (everyone views, admins manage)' },
       { name: 'Categories', description: 'Book categories (everyone views, admins manage)' },
+      { name: 'Books', description: 'Book catalog (everyone views, staff edit, admins disable)' },
+      { name: 'Book copies', description: 'Physical copies of books (staff)' },
     ],
     components: {
       securitySchemes: {

@@ -1,4 +1,4 @@
-import type { Author, Prisma } from '@prisma/client';
+import type { Author, Prisma, RecordStatus } from '@prisma/client';
 import prisma from '../prisma/prisma.ts';
 import type { AuthorPageFilters } from '../types/database/catalog-reference-filters.types.ts';
 import type { DatabaseClient } from '../types/database/database-client.types.ts';
@@ -41,6 +41,18 @@ export const authorRepository = {
       return await prisma.author.findUnique({ where: { id } });
     } catch {
       throw new InternalError('Failed to load author');
+    }
+  },
+
+  // Id and status of each requested author that exists (used to validate book references)
+  async findStatusesByIds(ids: string[]): Promise<{ id: string; status: RecordStatus }[]> {
+    try {
+      return await prisma.author.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, status: true },
+      });
+    } catch {
+      throw new InternalError('Failed to load authors');
     }
   },
 

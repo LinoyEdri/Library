@@ -1,4 +1,4 @@
-import { RecordStatus, Role } from '@prisma/client';
+import { CopyStatus, RecordStatus, Role } from '@prisma/client';
 import prisma from '../../prisma/prisma.ts';
 import { bcryptPassword } from '../../utils/authentication/password-hash.ts';
 import { INTEGRATION_TEST_DATABASE_NAME } from '../setup/integration-test-database-name.ts';
@@ -89,3 +89,34 @@ export const updateTestUser = (userId: string, data: { role?: Role; status?: Rec
   prisma.user.update({ where: { id: userId }, data });
 
 export const disconnectIntegrationTestDatabase = () => prisma.$disconnect();
+
+let createdCatalogRecordCounter = 0;
+
+// A publisher, author and category (active unless stated) for building test books
+export const createTestCatalogReferences = async (
+  createdByUserId: string,
+  status: RecordStatus = RecordStatus.ACTIVE,
+) => {
+  createdCatalogRecordCounter += 1;
+
+  const uniqueSuffix = `${createdCatalogRecordCounter}-${Date.now()}`;
+
+  const [publisher, author, category] = await Promise.all([
+    prisma.publisher.create({ data: { name: `הוצאה ${uniqueSuffix}`, status, createdByUserId } }),
+    prisma.author.create({
+      data: {
+        firstName: 'עמוס',
+        lastName: `עוז${createdCatalogRecordCounter}`,
+        status,
+        createdByUserId,
+      },
+    }),
+    prisma.category.create({ data: { name: `קטגוריה ${uniqueSuffix}`, status, createdByUserId } }),
+  ]);
+
+  return { publisher, author, category };
+};
+
+// Puts a copy on loan directly (the loans workflow arrives in a later slice)
+export const setTestCopyStatus = (copyId: string, status: CopyStatus) =>
+  prisma.bookCopy.update({ where: { id: copyId }, data: { status } });
