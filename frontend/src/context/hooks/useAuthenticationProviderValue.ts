@@ -27,11 +27,24 @@ export const useAuthenticationProviderValue = (): AuthenticationContextValue => 
     staleTime: CURRENT_USER_CACHE_MILLISECONDS,
   });
 
-  const logout = useCallback(() => {
+  // Forgets the token and all cached data on this device
+  const clearSession = useCallback(() => {
     accessTokenStorage.clear();
     setHasAccessToken(false);
     queryClient.clear();
   }, [queryClient]);
+
+  // User clicked "logout": tell the server (for the audit log), then clear the session.
+  // The session is cleared even if the server call fails.
+  const logout = useCallback(async () => {
+    try {
+      await authenticationApi.logout();
+    } catch {
+      // Logging out must always work locally
+    } finally {
+      clearSession();
+    }
+  }, [clearSession]);
 
   const login = useCallback(
     async (credentials: LoginInput) => {
@@ -46,13 +59,14 @@ export const useAuthenticationProviderValue = (): AuthenticationContextValue => 
     [queryClient],
   );
 
-  // A 401 on a logged-in request means the session ended (expired token or disabled account)
+  // A 401 on a logged-in request means the session already ended (expired token or
+  // disabled account), so the session is cleared without calling the logout endpoint
   useEffect(() => {
     setExpiredSessionHandler(() => {
-      logout();
+      clearSession();
       showNotification(HebrewTexts.authentication.sessionExpired, 'warning');
     });
-  }, [logout, showNotification]);
+  }, [clearSession, showNotification]);
 
   return useMemo(
     () => ({

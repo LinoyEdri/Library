@@ -14,6 +14,7 @@ import { DashboardPage } from '../../pages/dashboard/DashboardPage';
 import { NotFoundPage } from '../../pages/errors/NotFoundPage';
 import { UnauthorizedPage } from '../../pages/errors/UnauthorizedPage';
 import { ComingSoonPage } from '../../pages/placeholder/ComingSoonPage';
+import { ProfilePage } from '../../pages/profile/ProfilePage';
 
 // One page inside the app layout, guarded by permissions and shown in the breadcrumbs
 const createProtectedPageRoute = (
@@ -75,7 +76,7 @@ const protectedPageRoutes: RouteObject[] = [
     RoutePaths.PROFILE,
     navigation.profile,
     [Permission.PROFILE_MANAGE],
-    <ComingSoonPage title={navigation.profile} />,
+    <ProfilePage />,
   ),
 ];
 
