@@ -111,8 +111,9 @@ npx prettier --write .
 | 0     | `feature/authorization-rbac`: shared package, Zod env, auth fixes, RBAC, audit foundation, test harness                | ✅ merged               |
 | 1     | `feature/frontend-foundation`: theme/RTL, API client, auth context, router and guards, layout, login, sign-up, 403/404 | ✅ merged               |
 | 2     | `feature/profile`: PATCH /users/me, change password, logout API, Profile page                                          | ✅ merged               |
-| 3     | `feature/catalog-reference`: authors, publishers, categories API + catalog tabs and admin dialogs                      | ✅ done (merge pending) |
-| 4–12  | see below                                                                                                              | ⬜                      |
+| 3     | `feature/catalog-reference`: authors, publishers, categories API + catalog tabs and admin dialogs                      | ✅ merged               |
+| 4     | `feature/books`: books + copies API, catalog grid, book details, book form, copies table                               | ✅ done (merge pending) |
+| 5–12  | see below                                                                                                              | ⬜                      |
 
 ## Remaining roadmap
 
@@ -233,3 +234,5 @@ List endpoints use the shared `listQuerySchema` (page, pageSize, search, sortOrd
 
 - `bcrypt` is still a backend dependency but unused (`bcryptjs` is used). Remove it eventually.
 - Prettier puts single-prop JSX elements on one line. That is expected and accepted.
+- Docker on the user's machine holds port 3000; Vite uses `strictPort` so it fails loudly instead of taking 3001.
+- Placeholder image services cannot render Hebrew; books without an image use the app's built-in cover.
