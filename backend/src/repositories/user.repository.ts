@@ -1,3 +1,4 @@
+import { RecordStatus, Role, type User } from '@prisma/client';
 import type { RegisterInput } from '../types/requests/authentication.requests.types.ts';
 import type { UpdateOwnProfileInput } from '../types/requests/profile.requests.types.ts';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
@@ -111,6 +112,46 @@ export const userRepository = {
       });
     } catch {
       throw new InternalError('Failed to update password');
+    }
+  },
+
+  async updateRole(
+    id: string,
+    role: Role,
+    databaseClient: DatabaseClient = prisma,
+  ): Promise<UserWithAddressAndMembership> {
+    try {
+      return await databaseClient.user.update({
+        where: { id },
+        data: { role },
+        include: includeAddressAndMembership,
+      });
+    } catch {
+      throw new InternalError('Failed to change user role');
+    }
+  },
+
+  // Active guest (VIEWER) accounts without a membership, matching the search text
+  async findMemberCandidates(search: string | undefined, take: number): Promise<User[]> {
+    try {
+      return await prisma.user.findMany({
+        where: {
+          role: Role.VIEWER,
+          status: RecordStatus.ACTIVE,
+          member: { is: null },
+          ...(search && {
+            OR: [
+              { firstName: { contains: search, mode: 'insensitive' } },
+              { lastName: { contains: search, mode: 'insensitive' } },
+              { email: { contains: search, mode: 'insensitive' } },
+            ],
+          }),
+        },
+        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+        take,
+      });
+    } catch {
+      throw new InternalError('Failed to load member candidates');
     }
   },
 

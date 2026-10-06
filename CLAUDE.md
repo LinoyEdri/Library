@@ -13,6 +13,7 @@ The full requirements spec is in `README.md` (to be moved to `docs/requirements.
   - files added and modified, each with a one-line purpose;
   - new features and endpoints;
   - new libraries and why each was added.
+- **Smoke pass:** with every finished branch, also send a manual smoke-test checklist: step-by-step checks per role (what to click, what should happen), including error cases, so the user can test the branch in the browser.
 - **Token economy:** keep usage low without hurting quality.
   - Batch file writes and checks.
   - Don't re-read files you just wrote.
@@ -86,7 +87,8 @@ npm workspaces monorepo, Node >= 22.18:
 - The API prefix is `/api`, not `/api/v1`.
 - Login returns one generic 401 for every failure. Failed logins on known accounts are audited; unknown emails are only logged, because an audit row needs a real user.
 - Admin is a superset of Librarian. Admin and Librarian manage book copies; only Admin disables or reactivates books.
-- A disabled member can log in and see their history but cannot receive new loans.
+- Disabling a membership turns the account into a guest (VIEWER); reactivating restores MEMBER. The person can still log in, but cannot receive new loans while disabled.
+- Member search splits the text into words; every word must match a name, the email or the phone (digits only).
 
 ## Commands
 
@@ -112,8 +114,9 @@ npx prettier --write .
 | 1     | `feature/frontend-foundation`: theme/RTL, API client, auth context, router and guards, layout, login, sign-up, 403/404 | ✅ merged               |
 | 2     | `feature/profile`: PATCH /users/me, change password, logout API, Profile page                                          | ✅ merged               |
 | 3     | `feature/catalog-reference`: authors, publishers, categories API + catalog tabs and admin dialogs                      | ✅ merged               |
-| 4     | `feature/books`: books + copies API, catalog grid, book details, book form, copies table                               | ✅ done (merge pending) |
-| 5–12  | see below                                                                                                              | ⬜                      |
+| 4     | `feature/books`: books + copies API, catalog grid, book details, book form, copies table                               | ✅ merged               |
+| 5     | `feature/members`: members API (two create modes, candidates, own membership) + list, details, forms                   | ✅ done (merge pending) |
+| 6–12  | see below                                                                                                              | ⬜                      |
 
 ## Remaining roadmap
 

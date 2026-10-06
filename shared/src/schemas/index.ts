@@ -6,3 +6,4 @@ export * from './profile.schema.js';
 export * from './catalog-reference.schema.js';
 export * from './isbn-field.js';
 export * from './book.schema.js';
+export * from './member.schema.js';

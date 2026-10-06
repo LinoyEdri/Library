@@ -18,7 +18,7 @@ import { LoadErrorAlert } from '../../components/feedback/LoadErrorAlert';
 import { HebrewTexts } from '../../constants/hebrew-texts';
 import { buildEditBookPath } from '../../utils/build-book-paths';
 import { BookCopiesSection } from './BookCopiesSection';
-import { BookInformationRow } from './BookInformationRow';
+import { InformationRow } from '../../components/data-display/InformationRow';
 import { useBookDetailsPage } from './hooks/useBookDetailsPage';
 
 const { books: texts } = HebrewTexts;
@@ -116,27 +116,27 @@ export function BookDetailsPage() {
               />
             </Box>
 
-            <BookInformationRow
+            <InformationRow
               label={texts.publisherLabel}
               value={book.publisher.name}
             />
 
-            <BookInformationRow
+            <InformationRow
               label={texts.publicationYearLabel}
               value={book.publicationYear ?? '—'}
             />
 
-            <BookInformationRow
+            <InformationRow
               label={texts.languageLabel}
               value={book.language}
             />
 
-            <BookInformationRow
+            <InformationRow
               label={texts.isbnLabel}
               value={book.isbn ?? '—'}
             />
 
-            <BookInformationRow
+            <InformationRow
               label={texts.categoriesLabel}
               value={book.categories.map((category) => category.name).join(', ') || '—'}
             />

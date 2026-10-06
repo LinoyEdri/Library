@@ -6,4 +6,6 @@ export const QueryKeys = {
   CATEGORIES: ['categories'],
   BOOKS: ['books'],
   BOOK_LANGUAGES: ['book-languages'],
+  MEMBERS: ['members'],
+  MEMBER_CANDIDATES: ['member-candidates'],
 } as const;

@@ -266,4 +266,32 @@ export const openapiComponentSchemas = {
       },
     ],
   },
+  Member: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      userId: { type: 'string', format: 'uuid' },
+      status: { $ref: '#/components/schemas/RecordStatus' },
+      registrationDate: { type: 'string', format: 'date-time' },
+      updatedDate: { type: 'string', format: 'date-time' },
+      disabledDate: { type: 'string', format: 'date-time', nullable: true },
+      firstName: { type: 'string' },
+      lastName: { type: 'string' },
+      email: { type: 'string', format: 'email' },
+      phoneNumber: { type: 'string' },
+      address: { $ref: '#/components/schemas/Address' },
+      accountStatus: { $ref: '#/components/schemas/RecordStatus' },
+    },
+  },
+
+  MemberDetailsInput: {
+    type: 'object',
+    required: ['firstName', 'lastName', 'phoneNumber', 'address'],
+    properties: {
+      firstName: { type: 'string', maxLength: 100 },
+      lastName: { type: 'string', maxLength: 100 },
+      phoneNumber: { type: 'string', pattern: '^[0-9]{9,10}$' },
+      address: { $ref: '#/components/schemas/AddressInput' },
+    },
+  },
 };
