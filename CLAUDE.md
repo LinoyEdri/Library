@@ -110,8 +110,9 @@ npx prettier --write .
 | ----- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------- |
 | 0     | `feature/authorization-rbac`: shared package, Zod env, auth fixes, RBAC, audit foundation, test harness                | ✅ merged               |
 | 1     | `feature/frontend-foundation`: theme/RTL, API client, auth context, router and guards, layout, login, sign-up, 403/404 | ✅ merged               |
-| 2     | `feature/profile`: PATCH /users/me, change password, logout API, Profile page                                          | ✅ done (merge pending) |
-| 3–12  | see below                                                                                                              | ⬜                      |
+| 2     | `feature/profile`: PATCH /users/me, change password, logout API, Profile page                                          | ✅ merged               |
+| 3     | `feature/catalog-reference`: authors, publishers, categories API + catalog tabs and admin dialogs                      | ✅ done (merge pending) |
+| 4–12  | see below                                                                                                              | ⬜                      |
 
 ## Remaining roadmap
 

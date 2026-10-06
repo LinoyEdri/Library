@@ -1,5 +1,10 @@
 import axios, { type AxiosRequestConfig } from 'axios';
-import type { ApiErrorResponse, ApiSuccessResponse } from '@library/shared';
+import type {
+  ApiErrorResponse,
+  ApiSuccessResponse,
+  PaginatedList,
+  PaginationMeta,
+} from '@library/shared';
 import { accessTokenStorage } from './access-token-storage';
 import { StatusCodes } from 'http-status-codes';
 import { ApiRequestError, NETWORK_ERROR_STATUS_CODE } from './api-request-error';
@@ -53,4 +58,16 @@ export const sendApiRequest = async <ResponseData>(
   const response = await apiClient.request<ApiSuccessResponse<ResponseData>>(requestConfig);
 
   return response.data.data;
+};
+
+// Sends a list request and returns the items together with the paging info from `meta`
+export const sendPaginatedApiRequest = async <Item>(
+  requestConfig: AxiosRequestConfig,
+): Promise<PaginatedList<Item>> => {
+  const response = await apiClient.request<ApiSuccessResponse<Item[]>>(requestConfig);
+
+  return {
+    items: response.data.data,
+    meta: response.data.meta as PaginationMeta,
+  };
 };

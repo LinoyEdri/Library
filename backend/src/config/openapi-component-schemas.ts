@@ -106,4 +106,72 @@ export const openapiComponentSchemas = {
       user: { $ref: '#/components/schemas/SafeUser' },
     },
   },
+  PaginationMeta: {
+    type: 'object',
+    properties: {
+      page: { type: 'integer', example: 1 },
+      pageSize: { type: 'integer', example: 20 },
+      totalItems: { type: 'integer', example: 42 },
+      totalPages: { type: 'integer', example: 3 },
+    },
+  },
+
+  RecordLifecycle: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      status: { $ref: '#/components/schemas/RecordStatus' },
+      createdDate: { type: 'string', format: 'date-time' },
+      updatedDate: { type: 'string', format: 'date-time' },
+      disabledDate: { type: 'string', format: 'date-time', nullable: true },
+    },
+  },
+
+  AuthorDetails: {
+    type: 'object',
+    required: ['firstName', 'lastName'],
+    properties: {
+      firstName: { type: 'string', maxLength: 100, example: 'עמוס' },
+      lastName: { type: 'string', maxLength: 100, example: 'עוז' },
+      biography: { type: 'string', maxLength: 2000, nullable: true },
+    },
+  },
+
+  Author: {
+    allOf: [
+      { $ref: '#/components/schemas/RecordLifecycle' },
+      { $ref: '#/components/schemas/AuthorDetails' },
+    ],
+  },
+
+  PublisherDetails: {
+    type: 'object',
+    required: ['name'],
+    properties: {
+      name: { type: 'string', maxLength: 200, example: 'כנרת זמורה', description: 'Unique' },
+      description: { type: 'string', maxLength: 2000, nullable: true },
+    },
+  },
+
+  Publisher: {
+    allOf: [
+      { $ref: '#/components/schemas/RecordLifecycle' },
+      { $ref: '#/components/schemas/PublisherDetails' },
+    ],
+  },
+
+  CategoryDetails: {
+    type: 'object',
+    required: ['name'],
+    properties: {
+      name: { type: 'string', maxLength: 100, example: 'רומן', description: 'Unique' },
+    },
+  },
+
+  Category: {
+    allOf: [
+      { $ref: '#/components/schemas/RecordLifecycle' },
+      { $ref: '#/components/schemas/CategoryDetails' },
+    ],
+  },
 };
