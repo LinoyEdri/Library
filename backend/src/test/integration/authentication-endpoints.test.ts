@@ -169,6 +169,7 @@ describe('GET /api/auth/me', () => {
     expect(response.status).toBe(StatusCodes.OK);
     expect(response.body.data.id).toBe(user.id);
     expect(response.body.data.role).toBe(Role.MEMBER);
+    expect(response.body.data.membershipStatus).toBe(RecordStatus.ACTIVE);
   });
 
   it('returns 401 without a token', async () => {

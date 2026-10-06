@@ -1,10 +1,8 @@
 import jwt, { type SignOptions } from 'jsonwebtoken';
-import { jwtExpiresIn, jwtSecret } from '../config/env.ts';
-import { UnauthorizedError } from '../types/errors/UnauthorizedError.ts';
-import {
-  AccessTokenPayload,
-  accessTokenPayloadSchema,
-} from '../schemas/access-token-payload.schema.ts';
+import { jwtExpiresIn, jwtSecret } from '../../config/env.ts';
+import { UnauthorizedError } from '../../types/errors/UnauthorizedError.ts';
+import { accessTokenPayloadSchema } from '../../schemas/access-token-payload.schema.ts';
+import type { AccessTokenPayload } from '../../types/authentication/access-token-payload.types.ts';
 
 export const ACCESS_TOKEN_TYPE = 'Bearer';
 

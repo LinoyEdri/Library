@@ -87,6 +87,12 @@ export const openapiComponentSchemas = {
       role: { $ref: '#/components/schemas/Role' },
       address: { $ref: '#/components/schemas/Address' },
       lastLoginDate: { type: 'string', format: 'date-time', nullable: true },
+      membershipStatus: {
+        type: 'string',
+        enum: ['ACTIVE', 'DISABLED'],
+        nullable: true,
+        description: 'Library membership status; null when the user is not a member',
+      },
     },
   },
 

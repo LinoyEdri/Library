@@ -1,6 +1,6 @@
 import type { AuditLog, Prisma } from '@prisma/client';
 import prisma from '../prisma/prisma.ts';
-import type { DatabaseClient } from '../prisma/database-client.ts';
+import type { DatabaseClient } from '../types/database/database-client.types.ts';
 import { InternalError } from '../types/errors/InternalError.ts';
 
 // Append-only: this repository can create audit entries but never update or delete them

@@ -1,32 +1,33 @@
-import type { RegisterInput } from '@library/shared';
+import type { RegisterInput } from '../types/requests/authentication.requests.types.ts';
+import type { UpdateOwnProfileInput } from '../types/requests/profile.requests.types.ts';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import prisma from '../prisma/prisma.ts';
-import type { DatabaseClient } from '../prisma/database-client.ts';
+import type { DatabaseClient } from '../types/database/database-client.types.ts';
 import { PrismaErrorCodes } from '../prisma/error-codes.ts';
 import { ConflictError } from '../types/errors/ConflictError.ts';
 import { InternalError } from '../types/errors/InternalError.ts';
-import type { UserWithAddress } from '../types/dtos/user.dto.ts';
-
-// Every query loads the address too, so callers can build a SafeUser directly
-const includeAddress = { address: true } as const;
+import {
+  includeAddressAndMembership,
+  type UserWithAddressAndMembership,
+} from '../types/database/user-with-address-and-membership.types.ts';
 
 export const userRepository = {
-  async findByEmail(email: string): Promise<UserWithAddress | null> {
+  async findByEmail(email: string): Promise<UserWithAddressAndMembership | null> {
     try {
       return await prisma.user.findUnique({
         where: { email },
-        include: includeAddress,
+        include: includeAddressAndMembership,
       });
     } catch {
       throw new InternalError('Database connection error during lookup');
     }
   },
 
-  async findById(id: string): Promise<UserWithAddress | null> {
+  async findById(id: string): Promise<UserWithAddressAndMembership | null> {
     try {
       return await prisma.user.findUnique({
         where: { id },
-        include: includeAddress,
+        include: includeAddressAndMembership,
       });
     } catch {
       throw new InternalError('Database connection error during lookup');
@@ -55,15 +56,61 @@ export const userRepository = {
     id: string,
     lastLoginDate: Date,
     databaseClient: DatabaseClient = prisma,
-  ): Promise<UserWithAddress> {
+  ): Promise<UserWithAddressAndMembership> {
     try {
       return await databaseClient.user.update({
         where: { id },
         data: { lastLoginDate },
-        include: includeAddress,
+        include: includeAddressAndMembership,
       });
     } catch {
       throw new InternalError('Failed to update last login date');
+    }
+  },
+
+  // Updates the user's own details and their address in one atomic statement
+  async updateProfileWithAddress(
+    id: string,
+    profile: UpdateOwnProfileInput,
+    databaseClient: DatabaseClient = prisma,
+  ): Promise<UserWithAddressAndMembership> {
+    try {
+      return await databaseClient.user.update({
+        where: { id },
+        data: {
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          phoneNumber: profile.phoneNumber,
+          address: {
+            update: {
+              street: profile.address.street,
+              houseNumber: profile.address.houseNumber,
+              apartmentOrUnit: profile.address.apartmentOrUnit,
+              city: profile.address.city,
+              postalCode: profile.address.postalCode ?? null,
+              country: profile.address.country,
+            },
+          },
+        },
+        include: includeAddressAndMembership,
+      });
+    } catch {
+      throw new InternalError('Failed to update profile');
+    }
+  },
+
+  async updatePasswordHash(
+    id: string,
+    passwordHash: string,
+    databaseClient: DatabaseClient = prisma,
+  ): Promise<void> {
+    try {
+      await databaseClient.user.update({
+        where: { id },
+        data: { passwordHash },
+      });
+    } catch {
+      throw new InternalError('Failed to update password');
     }
   },
 
@@ -72,7 +119,7 @@ export const userRepository = {
     userDto: RegisterInput,
     passwordHash: string,
     databaseClient: DatabaseClient = prisma,
-  ): Promise<UserWithAddress> {
+  ): Promise<UserWithAddressAndMembership> {
     try {
       return await databaseClient.user.create({
         data: {
@@ -92,7 +139,7 @@ export const userRepository = {
             },
           },
         },
-        include: includeAddress,
+        include: includeAddressAndMembership,
       });
     } catch (error) {
       if (

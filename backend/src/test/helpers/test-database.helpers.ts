@@ -1,6 +1,6 @@
 import { RecordStatus, Role } from '@prisma/client';
 import prisma from '../../prisma/prisma.ts';
-import { bcryptPassword } from '../../utils/password-hash.ts';
+import { bcryptPassword } from '../../utils/authentication/password-hash.ts';
 import { INTEGRATION_TEST_DATABASE_NAME } from '../setup/integration-test-database-name.ts';
 
 // Every table, so a single TRUNCATE empties the whole database

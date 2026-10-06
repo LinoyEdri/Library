@@ -23,6 +23,8 @@ export interface SafeUserResponse {
   role: Role;
   address: AddressResponse;
   lastLoginDate: string | null;
+  // Status of the library membership; null when the user is not a member
+  membershipStatus: RecordStatus | null;
 }
 
 // Body returned by POST /auth/login

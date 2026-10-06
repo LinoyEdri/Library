@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
-import { ApiResponse } from '../../types/response.ts';
+import { ApiResponse } from '../../utils/http/api-response.ts';
 import status from 'http-status-codes';
-import { getStatusText } from '../../utils/status-text.ts';
+import { getStatusText } from '../../utils/http/status-text.ts';
 
 export function notFoundMiddleware(request: Request, response: Response): void {
   const errorMessage = `Route not found: ${request.method} ${request.originalUrl}`;

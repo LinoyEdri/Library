@@ -1,5 +1,5 @@
 import type { Role } from '@prisma/client';
-import { ACCESS_TOKEN_TYPE, jwtToken } from '../../utils/token.ts';
+import { ACCESS_TOKEN_TYPE, jwtToken } from '../../utils/authentication/access-token.ts';
 
 type TokenOwner = {
   id: string;

@@ -1,16 +1,21 @@
 import { ActionType, EntityType, RecordStatus } from '@prisma/client';
-import type { LoginInput, RegisterInput } from '@library/shared';
 import { jwtExpiresIn } from '../config/env.ts';
 import { logger } from '../logger/logger.ts';
 import { runInDatabaseTransaction } from '../prisma/run-in-database-transaction.ts';
 import { userRepository } from '../repositories/user.repository.ts';
 import { auditLogService } from './audit-log.service.ts';
-import { LoginResult, SafeUser, toSafeUser, type UserWithAddress } from '../types/dtos/user.dto.ts';
+import type { AuthenticatedUser } from '../types/authentication/authenticated-user.types.ts';
+import type { LoginInput, RegisterInput } from '../types/requests/authentication.requests.types.ts';
+import type { LoginResult } from '../types/responses/login-result.response.types.ts';
+import type { SafeUser } from '../types/responses/safe-user.response.types.ts';
+import type { UserWithAddressAndMembership } from '../types/database/user-with-address-and-membership.types.ts';
+import { LoginFailureReason } from '../types/authentication/login-failure-reason.types.ts';
+import { toSafeUser } from '../utils/mappers/to-safe-user.ts';
 import { ConflictError } from '../types/errors/ConflictError.ts';
 import { NotFoundError } from '../types/errors/NotFoundError.ts';
 import { UnauthorizedError } from '../types/errors/UnauthorizedError.ts';
-import { bcryptPassword } from '../utils/password-hash.ts';
-import { ACCESS_TOKEN_TYPE, jwtToken } from '../utils/token.ts';
+import { bcryptPassword } from '../utils/authentication/password-hash.ts';
+import { ACCESS_TOKEN_TYPE, jwtToken } from '../utils/authentication/access-token.ts';
 
 // One message for every login failure, so attackers cannot tell which emails exist
 export const INVALID_LOGIN_MESSAGE = 'Invalid email or password';
@@ -19,14 +24,11 @@ export const INVALID_LOGIN_MESSAGE = 'Invalid email or password';
 const TIMING_EQUALIZER_PASSWORD_HASH =
   '$2b$10$tNaFQbDyn5sTbf1FhO4KF.4QdV6UPekvOq6V8dX26Y6.oDRBzMLxS';
 
-// Why a login attempt for an existing account was rejected (stored in the audit log)
-const LoginFailureReason = {
-  WRONG_PASSWORD: 'WRONG_PASSWORD',
-  ACCOUNT_DISABLED: 'ACCOUNT_DISABLED',
-} as const;
-
 // Audits a failed attempt on a known account. Never blocks the 401 response if the audit write fails.
-const recordFailedLoginAttempt = async (user: UserWithAddress, reason: string): Promise<void> => {
+const recordFailedLoginAttempt = async (
+  user: UserWithAddressAndMembership,
+  reason: LoginFailureReason,
+): Promise<void> => {
   try {
     await auditLogService.recordAuditLogEntry({
       actionType: ActionType.USER_LOGIN_FAILED,
@@ -147,5 +149,16 @@ export const authenticationService = {
     }
 
     return toSafeUser(user);
+  },
+
+  // JWTs are stateless: the client discards the token, the server records the logout
+  async logout(actingUser: AuthenticatedUser): Promise<void> {
+    await auditLogService.recordAuditLogEntry({
+      actionType: ActionType.USER_LOGOUT,
+      actionUserId: actingUser.id,
+      actionUserRole: actingUser.role,
+      affectedType: EntityType.USER,
+      affectedRecordId: actingUser.id,
+    });
   },
 };

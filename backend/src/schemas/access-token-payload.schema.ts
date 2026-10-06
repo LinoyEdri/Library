@@ -7,5 +7,3 @@ export const accessTokenPayloadSchema = z.object({
   email: z.string(),
   role: z.enum(Role),
 });
-
-export type AccessTokenPayload = z.infer<typeof accessTokenPayloadSchema>;

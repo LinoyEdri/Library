@@ -1,6 +1,6 @@
 import pino from 'pino';
 import { nodeEnv } from '../config/env.ts';
-import { requestContext } from '../utils/context.ts';
+import { requestContext } from '../utils/request/request-context.ts';
 
 const isDevelopment = nodeEnv === 'development';
 
