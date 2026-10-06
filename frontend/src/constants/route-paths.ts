@@ -7,6 +7,9 @@ export const RoutePaths = {
 
   DASHBOARD: '/dashboard',
   BOOKS: '/books',
+  NEW_BOOK: '/books/new',
+  BOOK_DETAILS: '/books/:bookId',
+  EDIT_BOOK: '/books/:bookId/edit',
   AUTHORS: '/books/authors',
   CATEGORIES: '/books/categories',
   PUBLISHERS: '/books/publishers',

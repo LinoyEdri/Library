@@ -4,4 +4,6 @@ export const QueryKeys = {
   AUTHORS: ['authors'],
   PUBLISHERS: ['publishers'],
   CATEGORIES: ['categories'],
+  BOOKS: ['books'],
+  BOOK_LANGUAGES: ['book-languages'],
 } as const;

@@ -6,6 +6,8 @@ import usersRouter from './users.route.ts';
 import authorsRouter from './authors.route.ts';
 import publishersRouter from './publishers.route.ts';
 import categoriesRouter from './categories.route.ts';
+import booksRouter from './books.route.ts';
+import bookCopiesRouter from './book-copies.route.ts';
 
 export const apiRouter = Router();
 
@@ -16,3 +18,5 @@ apiRouter.use('/users', usersRouter);
 apiRouter.use('/authors', authorsRouter);
 apiRouter.use('/publishers', publishersRouter);
 apiRouter.use('/categories', categoriesRouter);
+apiRouter.use('/books', booksRouter);
+apiRouter.use('/book-copies', bookCopiesRouter);

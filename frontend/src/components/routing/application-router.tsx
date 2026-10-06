@@ -16,6 +16,9 @@ import { UnauthorizedPage } from '../../pages/errors/UnauthorizedPage';
 import { ComingSoonPage } from '../../pages/placeholder/ComingSoonPage';
 import { ProfilePage } from '../../pages/profile/ProfilePage';
 import { AuthorsPage } from '../../pages/catalog/AuthorsPage';
+import { BookDetailsPage } from '../../pages/books/BookDetailsPage';
+import { BookFormPage } from '../../pages/books/BookFormPage';
+import { BooksCatalogPage } from '../../pages/books/BooksCatalogPage';
 import { CatalogSectionLayout } from '../../pages/catalog/CatalogSectionLayout';
 import { CategoriesPage } from '../../pages/catalog/CategoriesPage';
 import { PublishersPage } from '../../pages/catalog/PublishersPage';
@@ -31,9 +34,9 @@ const createProtectedPageRoute = (
   children: [{ path, element: page, handle: { breadcrumb } }],
 });
 
-const { navigation, catalog } = HebrewTexts;
+const { navigation, catalog, books } = HebrewTexts;
 
-// One tab inside the catalog section, guarded by its view permission
+// One page inside the catalog section, guarded by a permission
 const createCatalogTabRoute = (
   path: string,
   breadcrumb: string,
@@ -44,34 +47,57 @@ const createCatalogTabRoute = (
   children: [{ path, element: page, handle: { breadcrumb } }],
 });
 
-// Books section with tabs: books, authors, categories, publishers
+// Books section: tabs (books, authors, categories, publishers), plus new / details / edit book pages
 const catalogSectionRoute: RouteObject = {
   element: <RequirePermission permissions={[Permission.BOOKS_VIEW]} />,
   children: [
     {
       path: RoutePaths.BOOKS,
-      element: <CatalogSectionLayout />,
       handle: { breadcrumb: navigation.books },
       children: [
-        { index: true, element: <ComingSoonPage title={navigation.books} /> },
+        {
+          element: <CatalogSectionLayout />,
+          children: [
+            { index: true, element: <BooksCatalogPage /> },
+            createCatalogTabRoute(
+              RoutePaths.AUTHORS,
+              catalog.authorsTab,
+              Permission.AUTHORS_VIEW,
+              <AuthorsPage />,
+            ),
+            createCatalogTabRoute(
+              RoutePaths.CATEGORIES,
+              catalog.categoriesTab,
+              Permission.CATEGORIES_VIEW,
+              <CategoriesPage />,
+            ),
+            createCatalogTabRoute(
+              RoutePaths.PUBLISHERS,
+              catalog.publishersTab,
+              Permission.PUBLISHERS_VIEW,
+              <PublishersPage />,
+            ),
+          ],
+        },
         createCatalogTabRoute(
-          RoutePaths.AUTHORS,
-          catalog.authorsTab,
-          Permission.AUTHORS_VIEW,
-          <AuthorsPage />,
+          RoutePaths.NEW_BOOK,
+          books.newBookTitle,
+          Permission.BOOKS_CREATE,
+          <BookFormPage />,
         ),
-        createCatalogTabRoute(
-          RoutePaths.CATEGORIES,
-          catalog.categoriesTab,
-          Permission.CATEGORIES_VIEW,
-          <CategoriesPage />,
-        ),
-        createCatalogTabRoute(
-          RoutePaths.PUBLISHERS,
-          catalog.publishersTab,
-          Permission.PUBLISHERS_VIEW,
-          <PublishersPage />,
-        ),
+        {
+          path: RoutePaths.BOOK_DETAILS,
+          handle: { breadcrumb: books.bookDetailsBreadcrumb },
+          children: [
+            { index: true, element: <BookDetailsPage /> },
+            createCatalogTabRoute(
+              RoutePaths.EDIT_BOOK,
+              books.editBreadcrumb,
+              Permission.BOOKS_UPDATE,
+              <BookFormPage />,
+            ),
+          ],
+        },
       ],
     },
   ],

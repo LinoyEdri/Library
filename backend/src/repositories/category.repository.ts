@@ -1,4 +1,4 @@
-import type { Category, Prisma } from '@prisma/client';
+import type { Category, Prisma, RecordStatus } from '@prisma/client';
 import prisma from '../prisma/prisma.ts';
 import type { NamedRecordPageFilters } from '../types/database/catalog-reference-filters.types.ts';
 import type { DatabaseClient } from '../types/database/database-client.types.ts';
@@ -42,6 +42,18 @@ export const categoryRepository = {
       return await prisma.category.findUnique({ where: { id } });
     } catch {
       throw new InternalError('Failed to load category');
+    }
+  },
+
+  // Id and status of each requested category that exists (used to validate book references)
+  async findStatusesByIds(ids: string[]): Promise<{ id: string; status: RecordStatus }[]> {
+    try {
+      return await prisma.category.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, status: true },
+      });
+    } catch {
+      throw new InternalError('Failed to load categories');
     }
   },
 

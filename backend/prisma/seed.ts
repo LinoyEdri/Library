@@ -281,7 +281,7 @@ async function main(): Promise<void> {
       const bookSeeds = [
         {
           title: 'סיפור על אהבה וחושך',
-          isbn: '9789650000001',
+          isbn: '9789650000011',
           publisher: 'עם עובד',
           publicationYear: 2002,
           authors: ['עמוס עוז'],
@@ -291,7 +291,7 @@ async function main(): Promise<void> {
         },
         {
           title: 'מיכאל שלי',
-          isbn: '9789650000002',
+          isbn: '9789650000028',
           publisher: 'עם עובד',
           publicationYear: 1968,
           authors: ['עמוס עוז'],
@@ -301,7 +301,7 @@ async function main(): Promise<void> {
         },
         {
           title: 'אישה בורחת מבשורה',
-          isbn: '9789650000003',
+          isbn: '9789650000035',
           publisher: 'כתר',
           publicationYear: 2008,
           authors: ['דויד גרוסמן'],
@@ -311,7 +311,7 @@ async function main(): Promise<void> {
         },
         {
           title: 'פתאום דפיקה בדלת',
-          isbn: '9789650000004',
+          isbn: '9789650000042',
           publisher: 'זמורה ביתן',
           publicationYear: 2010,
           authors: ['אתגר קרת'],
@@ -321,7 +321,7 @@ async function main(): Promise<void> {
         },
         {
           title: 'רומן רוסי',
-          isbn: '9789650000005',
+          isbn: '9789650000059',
           publisher: 'עם עובד',
           publicationYear: 1988,
           authors: ['מאיר שלו'],
@@ -331,7 +331,7 @@ async function main(): Promise<void> {
         },
         {
           title: 'חיי אהבה',
-          isbn: '9789650000006',
+          isbn: '9789650000066',
           publisher: 'כתר',
           publicationYear: 1997,
           authors: ['צרויה שלו'],
@@ -341,7 +341,7 @@ async function main(): Promise<void> {
         },
         {
           title: 'קיצור תולדות האנושות',
-          isbn: '9789650000007',
+          isbn: '9789650000073',
           publisher: 'כנרת',
           publicationYear: 2011,
           authors: ['יובל נח הררי'],
@@ -351,7 +351,7 @@ async function main(): Promise<void> {
         },
         {
           title: '21 מחשבות על המאה ה-21',
-          isbn: '9789650000008',
+          isbn: '9789650000080',
           publisher: 'כנרת',
           publicationYear: 2018,
           authors: ['יובל נח הררי'],
@@ -379,7 +379,9 @@ async function main(): Promise<void> {
             publicationYear: seed.publicationYear,
             description: seed.description,
             language: 'עברית',
-            imageUrl: `https://placehold.co/300x450?text=${seed.title}`,
+            // No image: the app shows its own cover with the Hebrew title
+            // (placeholder image services cannot render Hebrew text)
+            imageUrl: '',
             createdBy: { connect: { id: admin.id } },
 
             // Join rows. The first author listed is marked as the primary one.
