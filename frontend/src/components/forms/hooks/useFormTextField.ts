@@ -1,18 +1,19 @@
 import type { ChangeEvent } from 'react';
 import { useController, type Control, type FieldValues, type Path } from 'react-hook-form';
 
-type UseFormTextFieldOptions<FormValues extends FieldValues> = {
+type UseFormTextFieldOptions<FormValues extends FieldValues, SubmittedValues> = {
   name: Path<FormValues>;
-  control: Control<FormValues>;
+  // SubmittedValues: what the schema turns the inputs into (may differ from the inputs)
+  control: Control<FormValues, unknown, SubmittedValues>;
   emptyAsUndefined: boolean;
 };
 
 // Connects a text input to React Hook Form and exposes its value and validation error
-export const useFormTextField = <FormValues extends FieldValues>({
+export const useFormTextField = <FormValues extends FieldValues, SubmittedValues>({
   name,
   control,
   emptyAsUndefined,
-}: UseFormTextFieldOptions<FormValues>) => {
+}: UseFormTextFieldOptions<FormValues, SubmittedValues>) => {
   const { field, fieldState } = useController({ name, control });
 
   // Empty input becomes undefined for optional fields (e.g. postal code)

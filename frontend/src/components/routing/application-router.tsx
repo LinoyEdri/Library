@@ -15,6 +15,10 @@ import { NotFoundPage } from '../../pages/errors/NotFoundPage';
 import { UnauthorizedPage } from '../../pages/errors/UnauthorizedPage';
 import { ComingSoonPage } from '../../pages/placeholder/ComingSoonPage';
 import { ProfilePage } from '../../pages/profile/ProfilePage';
+import { AuthorsPage } from '../../pages/catalog/AuthorsPage';
+import { CatalogSectionLayout } from '../../pages/catalog/CatalogSectionLayout';
+import { CategoriesPage } from '../../pages/catalog/CategoriesPage';
+import { PublishersPage } from '../../pages/catalog/PublishersPage';
 
 // One page inside the app layout, guarded by permissions and shown in the breadcrumbs
 const createProtectedPageRoute = (
@@ -27,7 +31,51 @@ const createProtectedPageRoute = (
   children: [{ path, element: page, handle: { breadcrumb } }],
 });
 
-const { navigation } = HebrewTexts;
+const { navigation, catalog } = HebrewTexts;
+
+// One tab inside the catalog section, guarded by its view permission
+const createCatalogTabRoute = (
+  path: string,
+  breadcrumb: string,
+  permission: Permission,
+  page: ReactNode,
+): RouteObject => ({
+  element: <RequirePermission permissions={[permission]} />,
+  children: [{ path, element: page, handle: { breadcrumb } }],
+});
+
+// Books section with tabs: books, authors, categories, publishers
+const catalogSectionRoute: RouteObject = {
+  element: <RequirePermission permissions={[Permission.BOOKS_VIEW]} />,
+  children: [
+    {
+      path: RoutePaths.BOOKS,
+      element: <CatalogSectionLayout />,
+      handle: { breadcrumb: navigation.books },
+      children: [
+        { index: true, element: <ComingSoonPage title={navigation.books} /> },
+        createCatalogTabRoute(
+          RoutePaths.AUTHORS,
+          catalog.authorsTab,
+          Permission.AUTHORS_VIEW,
+          <AuthorsPage />,
+        ),
+        createCatalogTabRoute(
+          RoutePaths.CATEGORIES,
+          catalog.categoriesTab,
+          Permission.CATEGORIES_VIEW,
+          <CategoriesPage />,
+        ),
+        createCatalogTabRoute(
+          RoutePaths.PUBLISHERS,
+          catalog.publishersTab,
+          Permission.PUBLISHERS_VIEW,
+          <PublishersPage />,
+        ),
+      ],
+    },
+  ],
+};
 
 const protectedPageRoutes: RouteObject[] = [
   createProtectedPageRoute(
@@ -36,12 +84,7 @@ const protectedPageRoutes: RouteObject[] = [
     [Permission.DASHBOARD_VIEW],
     <DashboardPage />,
   ),
-  createProtectedPageRoute(
-    RoutePaths.BOOKS,
-    navigation.books,
-    [Permission.BOOKS_VIEW],
-    <ComingSoonPage title={navigation.books} />,
-  ),
+  catalogSectionRoute,
   createProtectedPageRoute(
     RoutePaths.MEMBERS,
     navigation.members,
