@@ -1,12 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import { catchAsync } from '../../utils/catch-async.ts';
+import { catchAsync } from '../../utils/http/catch-async.ts';
 import { ZodObject } from 'zod';
-
-export enum RequestLocation {
-  BODY = 'body',
-  PARAMS = 'params',
-  QUERY = 'query',
-}
+import { RequestLocation } from '../../types/http/request-location.types.ts';
 
 export const validate = (location: RequestLocation, schema: ZodObject) => {
   return catchAsync(async (req: Request, _res: Response, next: NextFunction): Promise<void> => {

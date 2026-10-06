@@ -1,6 +1,6 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import { randomUUID } from 'node:crypto';
-import { requestContext } from '../../utils/context.ts';
+import { requestContext } from '../../utils/request/request-context.ts';
 
 export function requestIdMiddleware(req: Request, res: Response, next: NextFunction): void {
   // 1. Snag the existing ID from the client or create a shiny new one

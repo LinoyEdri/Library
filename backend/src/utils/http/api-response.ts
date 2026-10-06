@@ -1,10 +1,8 @@
 import status from 'http-status-codes';
-import { getStatusText } from '../utils/status-text.ts';
+import { getStatusText } from './status-text.ts';
 import type { ApiErrorDetail, ApiErrorResponse, ApiSuccessResponse } from '@library/shared';
 
-// Envelope types live in @library/shared so the frontend uses the same shapes
-export type { ApiSuccessResponse, ApiErrorDetail, ApiErrorResponse };
-
+// Builds the standard success/error envelopes (types come from @library/shared)
 export const ApiResponse = {
   success: <T>(
     data: T,

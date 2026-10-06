@@ -1,4 +1,4 @@
-import { Role } from '@library/shared';
+import { RecordStatus, Role } from '@library/shared';
 
 // All visible UI text in one place (Hebrew)
 export const HebrewTexts = {
@@ -50,6 +50,9 @@ export const HebrewTexts = {
     apartmentOrUnit: 'דירה',
     city: 'עיר',
     postalCode: 'מיקוד (לא חובה)',
+    currentPassword: 'סיסמה נוכחית',
+    newPassword: 'סיסמה חדשה',
+    confirmNewPassword: 'אימות סיסמה חדשה',
   },
 
   errors: {
@@ -66,6 +69,27 @@ export const HebrewTexts = {
     networkError: 'אין חיבור לשרת, בדקו את החיבור ונסו שוב',
   },
 
+  profile: {
+    pageTitle: 'הפרופיל שלי',
+    personalDetailsTitle: 'פרטים אישיים',
+    saveChanges: 'שמירת שינויים',
+    profileUpdated: 'הפרטים עודכנו בהצלחה',
+    changePasswordTitle: 'שינוי סיסמה',
+    changePasswordButton: 'עדכון סיסמה',
+    passwordChanged: 'הסיסמה עודכנה בהצלחה',
+    incorrectCurrentPassword: 'הסיסמה הנוכחית שגויה',
+    accountInformationTitle: 'פרטי חשבון',
+    role: 'תפקיד',
+    membershipStatus: 'סטטוס מנוי',
+    lastLogin: 'התחברות אחרונה',
+    noLastLogin: 'אין נתון',
+  },
+
+  membershipStatuses: {
+    [RecordStatus.ACTIVE]: 'מנוי פעיל',
+    [RecordStatus.DISABLED]: 'מנוי מושבת',
+  },
+
   placeholders: {
     comingSoon: 'העמוד בפיתוח ויהיה זמין בקרוב.',
     dashboardWelcome: 'שלום',
@@ -75,6 +99,6 @@ export const HebrewTexts = {
     [Role.ADMIN]: 'מנהל מערכת',
     [Role.LIBRARIAN]: 'ספרן',
     [Role.MEMBER]: 'מנוי',
-    [Role.VIEWER]: 'צופה',
+    [Role.VIEWER]: 'אורח',
   },
 } as const;

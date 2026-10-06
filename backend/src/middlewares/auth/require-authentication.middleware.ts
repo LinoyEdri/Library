@@ -2,23 +2,9 @@ import { NextFunction, Request, Response } from 'express';
 import { RecordStatus } from '@prisma/client';
 import { userRepository } from '../../repositories/user.repository.ts';
 import { UnauthorizedError } from '../../types/errors/UnauthorizedError.ts';
-import { catchAsync } from '../../utils/catch-async.ts';
-import { ACCESS_TOKEN_TYPE, jwtToken } from '../../utils/token.ts';
-
-// Reads "Authorization: Bearer <token>" and returns the token, or null when missing/malformed
-const extractBearerToken = (authorizationHeader: string | undefined): string | null => {
-  if (!authorizationHeader) {
-    return null;
-  }
-
-  const [tokenType, token] = authorizationHeader.split(' ');
-
-  if (tokenType !== ACCESS_TOKEN_TYPE || !token) {
-    return null;
-  }
-
-  return token;
-};
+import { catchAsync } from '../../utils/http/catch-async.ts';
+import { jwtToken } from '../../utils/authentication/access-token.ts';
+import { extractBearerToken } from '../../utils/authentication/extract-bearer-token.ts';
 
 // Verifies the JWT, then re-loads the user so disabled accounts and role changes apply immediately
 export const requireAuthentication = catchAsync(

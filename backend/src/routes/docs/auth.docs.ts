@@ -174,3 +174,72 @@
  *             schema:
  *               $ref: '#/components/schemas/ApiError'
  */
+
+// CHANGE PASSWORD
+/**
+ * @openapi
+ * /auth/change-password:
+ *   post:
+ *     summary: Change the current user's password
+ *     description: Requires the current password. A wrong current password returns 400 (not 401, so the session stays open).
+ *     operationId: changeOwnPassword
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentPassword, newPassword]
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 format: password
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *                 maxLength: 128
+ *                 description: Must differ from the current password
+ *     responses:
+ *       200:
+ *         description: Password changed
+ *       400:
+ *         description: Validation error or incorrect current password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       401:
+ *         description: Missing or invalid access token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ */
+
+// LOGOUT
+/**
+ * @openapi
+ * /auth/logout:
+ *   post:
+ *     summary: Log out
+ *     description: Records the logout in the audit log. The client must discard its access token.
+ *     operationId: logout
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out
+ *       401:
+ *         description: Missing or invalid access token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ */

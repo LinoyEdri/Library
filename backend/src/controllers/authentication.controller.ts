@@ -1,10 +1,11 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { catchAsync } from '../utils/catch-async.ts';
-import { getStatusText } from '../utils/status-text.ts';
+import { catchAsync } from '../utils/http/catch-async.ts';
+import { getAuthenticatedUser } from '../utils/authentication/get-authenticated-user.ts';
+import { getStatusText } from '../utils/http/status-text.ts';
 import { authenticationService } from '../services/authentication.service.ts';
-import { UnauthorizedError } from '../types/errors/UnauthorizedError.ts';
-import { ApiResponse } from '../types/response.ts';
+import { profileService } from '../services/profile.service.ts';
+import { ApiResponse } from '../utils/http/api-response.ts';
 
 // Thin HTTP layer: read the request, call the service, wrap the result in the envelope
 export const authenticationController = {
@@ -28,15 +29,23 @@ export const authenticationController = {
     res.status(StatusCodes.OK).json(ApiResponse.success(loginResult, 'Login successful'));
   }),
 
-  getCurrentUser: catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return next(new UnauthorizedError('Authentication required'));
-    }
-
-    const currentUser = await authenticationService.getCurrentUser(req.user.id);
+  getCurrentUser: catchAsync(async (req: Request, res: Response) => {
+    const currentUser = await authenticationService.getCurrentUser(getAuthenticatedUser(req).id);
 
     res
       .status(StatusCodes.OK)
       .json(ApiResponse.success(currentUser, 'User retrieved successfully'));
+  }),
+
+  changePassword: catchAsync(async (req: Request, res: Response) => {
+    await profileService.changeOwnPassword(getAuthenticatedUser(req), req.body);
+
+    res.status(StatusCodes.OK).json(ApiResponse.success(null, 'Password changed successfully'));
+  }),
+
+  logout: catchAsync(async (req: Request, res: Response) => {
+    await authenticationService.logout(getAuthenticatedUser(req));
+
+    res.status(StatusCodes.OK).json(ApiResponse.success(null, 'Logged out successfully'));
   }),
 };

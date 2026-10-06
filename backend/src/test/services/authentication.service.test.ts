@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ActionType, RecordStatus, Role } from '@prisma/client';
-import { bcryptPassword } from '../../utils/password-hash.ts';
+import { bcryptPassword } from '../../utils/authentication/password-hash.ts';
 import {
   authenticationService,
   INVALID_LOGIN_MESSAGE,
@@ -9,13 +9,13 @@ import { userRepository } from '../../repositories/user.repository.ts';
 import { ConflictError } from '../../types/errors/ConflictError.ts';
 import { NotFoundError } from '../../types/errors/NotFoundError.ts';
 import { UnauthorizedError } from '../../types/errors/UnauthorizedError.ts';
-import type { UserWithAddress } from '../../types/dtos/user.dto.ts';
+import type { UserWithAddressAndMembership } from '../../types/database/user-with-address-and-membership.types.ts';
 import { auditLogService } from '../../services/audit-log.service.ts';
 import { runInDatabaseTransaction } from '../../prisma/run-in-database-transaction.ts';
 
 // Mock the repository, hashing, audit and transaction modules - no real DB or bcrypt calls happen
 vi.mock('../../repositories/user.repository.ts');
-vi.mock('../../utils/password-hash.ts');
+vi.mock('../../utils/authentication/password-hash.ts');
 vi.mock('../../services/audit-log.service.ts');
 vi.mock('../../prisma/run-in-database-transaction.ts');
 
@@ -24,7 +24,7 @@ const runWorkWithoutRealTransaction = () => {
   vi.mocked(runInDatabaseTransaction).mockImplementation((work) => work({} as never));
 };
 
-const activeUserWithAddress: UserWithAddress = {
+const activeUserWithAddress: UserWithAddressAndMembership = {
   id: 'user-1',
   firstName: 'Jane',
   lastName: 'Doe',
@@ -40,6 +40,7 @@ const activeUserWithAddress: UserWithAddress = {
   disabledDate: null,
   disabledByUserId: null,
   createdByUserId: null,
+  member: null,
   address: {
     id: 'address-1',
     street: 'Herzl',

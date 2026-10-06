@@ -24,7 +24,8 @@ const openapiDefinition: swaggerJSDoc.Options = {
     tags: [
       { name: 'Health', description: 'Application health endpoints' },
       { name: 'Docs', description: 'API documentation endpoints' },
-      { name: 'Auth', description: 'Registration, login and current user' },
+      { name: 'Auth', description: 'Registration, login, logout, password and current user' },
+      { name: 'Users', description: 'User accounts and the current user profile' },
     ],
     components: {
       securitySchemes: {

@@ -1,59 +1,13 @@
 import type { ErrorRequestHandler } from 'express';
-import { StatusCodes } from 'http-status-codes';
 import { ZodError } from 'zod';
-
 import { logger } from '../../logger/logger.ts';
-import { ApiResponse } from '../../types/response.ts';
-import { AppError } from '../../types/errors/AppError.ts';
-import { getStatusText } from '../../utils/status-text.ts';
+import { ApiResponse } from '../../utils/http/api-response.ts';
+import { getStatusText } from '../../utils/http/status-text.ts';
+import { getErrorMessage } from '../../utils/errors/get-error-message.ts';
+import { getErrorStatusCode } from '../../utils/errors/get-error-status-code.ts';
+import { getValidationErrorDetails } from '../../utils/errors/get-validation-error-details.ts';
 
-type ErrorWithStatusCode = Error & {
-  statusCode?: unknown;
-};
-
-function isErrorWithStatusCode(error: unknown): error is ErrorWithStatusCode {
-  return error instanceof Error && 'statusCode' in error;
-}
-
-function getErrorStatusCode(error: unknown): number {
-  if (error instanceof AppError) {
-    return error.statusCode;
-  } else if (error instanceof ZodError) {
-    return StatusCodes.BAD_REQUEST;
-  } else if (
-    isErrorWithStatusCode(error) &&
-    typeof error.statusCode === 'number' &&
-    error.statusCode >= StatusCodes.BAD_REQUEST &&
-    error.statusCode <= StatusCodes.NETWORK_AUTHENTICATION_REQUIRED
-  ) {
-    return error.statusCode;
-  }
-
-  return StatusCodes.INTERNAL_SERVER_ERROR;
-}
-
-function getErrorMessage(error: unknown, statusCode: number): string {
-  if (statusCode >= StatusCodes.INTERNAL_SERVER_ERROR) {
-    return 'An internal server error occurred';
-  } else if (error instanceof AppError) {
-    return error.message;
-  } else if (error instanceof ZodError) {
-    return 'Validation failed';
-  } else if (error instanceof Error) {
-    return error.message;
-  }
-
-  return 'An unexpected error occurred';
-}
-
-function getValidationDetails(error: ZodError) {
-  return error.issues.map((issue) => ({
-    field: issue.path.join('.') || 'request',
-    message: issue.message,
-    code: issue.code,
-  }));
-}
-
+// Last middleware: turns any error into the standard error envelope
 export const errorMiddleware: ErrorRequestHandler = (
   error: unknown,
   request,
@@ -65,7 +19,7 @@ export const errorMiddleware: ErrorRequestHandler = (
 
   const message = getErrorMessage(error, statusCode);
 
-  const details = error instanceof ZodError ? getValidationDetails(error) : undefined;
+  const details = error instanceof ZodError ? getValidationErrorDetails(error) : undefined;
 
   logger.error(
     {

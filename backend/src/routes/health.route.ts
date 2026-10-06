@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import statusCodes from 'http-status-codes';
-import { ApiResponse } from '../types/response.ts';
+import { ApiResponse } from '../utils/http/api-response.ts';
 
 const healthRouter = Router();
 
