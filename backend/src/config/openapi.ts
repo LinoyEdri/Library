@@ -31,6 +31,7 @@ const openapiDefinition: swaggerJSDoc.Options = {
       { name: 'Categories', description: 'Book categories (everyone views, admins manage)' },
       { name: 'Books', description: 'Book catalog (everyone views, staff edit, admins disable)' },
       { name: 'Book copies', description: 'Physical copies of books (staff)' },
+      { name: 'Members', description: 'Library members (staff manage; members see their own)' },
     ],
     components: {
       securitySchemes: {
