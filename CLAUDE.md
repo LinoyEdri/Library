@@ -39,6 +39,13 @@ The full requirements spec is in `README.md` (to be moved to `docs/requirements.
   ```
   Prettier's `singleAttributePerLine: true` enforces most of this. Always write object props expanded, because Prettier keeps them that way.
 - **Status codes:** never hard-code numbers; use `StatusCodes.*` from `http-status-codes`. Text conversion is in `backend/src/utils/status-text.ts`.
+- **Backend types:** never declare types inline in services, middlewares or controllers. They go in `backend/src/types/<purpose>/`:
+  - `requests/`: request bodies, re-exported from the shared schemas
+  - `responses/`: what services return
+  - `database/`: Prisma payload types and `DatabaseClient`
+  - `authentication/`, `audit/`, `http/`, `errors/`
+  - Files are named `*.types.ts`; response types `*.response.types.ts`.
+- **Backend utils:** pure helper functions go in `backend/src/utils/<purpose>/` (`authentication/`, `http/`, `errors/`, `mappers/`, `comparison/`, `audit/`, `request/`), one function per file. Helpers that call repositories or services stay in the service.
 - **Language:** all UI text and validation messages are in Hebrew (spec requirement). UI strings live in `frontend/src/constants/hebrew-texts.ts`.
 - **Prettier** (root `.prettierrc`): single quotes, 2-space indent, trailing commas, 100 columns, LF line endings (`.gitattributes`).
 
@@ -99,12 +106,12 @@ npx prettier --write .
 
 ## Progress
 
-| Slice | Branch                                                                                                                 | Status                                        |
-| ----- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| 0     | `feature/authorization-rbac`: shared package, Zod env, auth fixes, RBAC, audit foundation, test harness                | ✅ merged                                     |
-| 1     | `feature/frontend-foundation`: theme/RTL, API client, auth context, router and guards, layout, login, sign-up, 403/404 | ✅ merged                                     |
-| 2     | `feature/profile`                                                                                                      | ⏭ **next (branch created, nothing done yet)** |
-| 3–12  | see below                                                                                                              | ⬜                                            |
+| Slice | Branch                                                                                                                 | Status                  |
+| ----- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| 0     | `feature/authorization-rbac`: shared package, Zod env, auth fixes, RBAC, audit foundation, test harness                | ✅ merged               |
+| 1     | `feature/frontend-foundation`: theme/RTL, API client, auth context, router and guards, layout, login, sign-up, 403/404 | ✅ merged               |
+| 2     | `feature/profile`: PATCH /users/me, change password, logout API, Profile page                                          | ✅ done (merge pending) |
+| 3–12  | see below                                                                                                              | ⬜                      |
 
 ## Remaining roadmap
 
@@ -127,7 +134,6 @@ List endpoints use the shared `listQuerySchema` (page, pageSize, search, sortOrd
   - `POST /api/auth/logout`: audit `USER_LOGOUT`.
 - Frontend:
   - Profile page: personal info, address, change-password card, account info (role, last login).
-  - Notification preferences as a UI-only placeholder card.
   - Logout calls the logout API.
 
 **3. Authors, Categories, Publishers** (`feature/catalog-reference`)
