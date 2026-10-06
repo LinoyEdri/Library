@@ -2,8 +2,8 @@ import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-// One "label: value" line in the book details
-export function BookInformationRow({ label, value }: { label: string; value: ReactNode }) {
+// One "label: value" line in a details page
+export function InformationRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <Box
       sx={{

@@ -19,6 +19,9 @@ import { AuthorsPage } from '../../pages/catalog/AuthorsPage';
 import { BookDetailsPage } from '../../pages/books/BookDetailsPage';
 import { BookFormPage } from '../../pages/books/BookFormPage';
 import { BooksCatalogPage } from '../../pages/books/BooksCatalogPage';
+import { MemberDetailsPage } from '../../pages/members/MemberDetailsPage';
+import { MemberFormPage } from '../../pages/members/MemberFormPage';
+import { MembersListPage } from '../../pages/members/MembersListPage';
 import { CatalogSectionLayout } from '../../pages/catalog/CatalogSectionLayout';
 import { CategoriesPage } from '../../pages/catalog/CategoriesPage';
 import { PublishersPage } from '../../pages/catalog/PublishersPage';
@@ -34,10 +37,10 @@ const createProtectedPageRoute = (
   children: [{ path, element: page, handle: { breadcrumb } }],
 });
 
-const { navigation, catalog, books } = HebrewTexts;
+const { navigation, catalog, books, members } = HebrewTexts;
 
 // One page inside the catalog section, guarded by a permission
-const createCatalogTabRoute = (
+const createPermissionGuardedRoute = (
   path: string,
   breadcrumb: string,
   permission: Permission,
@@ -59,19 +62,19 @@ const catalogSectionRoute: RouteObject = {
           element: <CatalogSectionLayout />,
           children: [
             { index: true, element: <BooksCatalogPage /> },
-            createCatalogTabRoute(
+            createPermissionGuardedRoute(
               RoutePaths.AUTHORS,
               catalog.authorsTab,
               Permission.AUTHORS_VIEW,
               <AuthorsPage />,
             ),
-            createCatalogTabRoute(
+            createPermissionGuardedRoute(
               RoutePaths.CATEGORIES,
               catalog.categoriesTab,
               Permission.CATEGORIES_VIEW,
               <CategoriesPage />,
             ),
-            createCatalogTabRoute(
+            createPermissionGuardedRoute(
               RoutePaths.PUBLISHERS,
               catalog.publishersTab,
               Permission.PUBLISHERS_VIEW,
@@ -79,7 +82,7 @@ const catalogSectionRoute: RouteObject = {
             ),
           ],
         },
-        createCatalogTabRoute(
+        createPermissionGuardedRoute(
           RoutePaths.NEW_BOOK,
           books.newBookTitle,
           Permission.BOOKS_CREATE,
@@ -90,11 +93,44 @@ const catalogSectionRoute: RouteObject = {
           handle: { breadcrumb: books.bookDetailsBreadcrumb },
           children: [
             { index: true, element: <BookDetailsPage /> },
-            createCatalogTabRoute(
+            createPermissionGuardedRoute(
               RoutePaths.EDIT_BOOK,
               books.editBreadcrumb,
               Permission.BOOKS_UPDATE,
               <BookFormPage />,
+            ),
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+// Members section: list, new member, member details and edit
+const membersSectionRoute: RouteObject = {
+  element: <RequirePermission permissions={[Permission.MEMBERS_VIEW]} />,
+  children: [
+    {
+      path: RoutePaths.MEMBERS,
+      handle: { breadcrumb: navigation.members },
+      children: [
+        { index: true, element: <MembersListPage /> },
+        createPermissionGuardedRoute(
+          RoutePaths.NEW_MEMBER,
+          members.newMemberTitle,
+          Permission.MEMBERS_MANAGE,
+          <MemberFormPage />,
+        ),
+        {
+          path: RoutePaths.MEMBER_DETAILS,
+          handle: { breadcrumb: members.memberDetailsBreadcrumb },
+          children: [
+            { index: true, element: <MemberDetailsPage /> },
+            createPermissionGuardedRoute(
+              RoutePaths.EDIT_MEMBER,
+              members.editBreadcrumb,
+              Permission.MEMBERS_MANAGE,
+              <MemberFormPage />,
             ),
           ],
         },
@@ -111,12 +147,7 @@ const protectedPageRoutes: RouteObject[] = [
     <DashboardPage />,
   ),
   catalogSectionRoute,
-  createProtectedPageRoute(
-    RoutePaths.MEMBERS,
-    navigation.members,
-    [Permission.MEMBERS_VIEW],
-    <ComingSoonPage title={navigation.members} />,
-  ),
+  membersSectionRoute,
   createProtectedPageRoute(
     RoutePaths.LOANS,
     navigation.loans,
