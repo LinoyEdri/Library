@@ -26,6 +26,9 @@ const openapiDefinition: swaggerJSDoc.Options = {
       { name: 'Docs', description: 'API documentation endpoints' },
       { name: 'Auth', description: 'Registration, login, logout, password and current user' },
       { name: 'Users', description: 'User accounts and the current user profile' },
+      { name: 'Authors', description: 'Book authors (everyone views, admins manage)' },
+      { name: 'Publishers', description: 'Publishers (everyone views, admins manage)' },
+      { name: 'Categories', description: 'Book categories (everyone views, admins manage)' },
     ],
     components: {
       securitySchemes: {

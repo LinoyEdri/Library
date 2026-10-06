@@ -5,3 +5,9 @@ export interface PaginationMeta {
   totalItems: number;
   totalPages: number;
 }
+
+// One page of a list: the items plus the paging info
+export interface PaginatedList<Item> {
+  items: Item[];
+  meta: PaginationMeta;
+}
