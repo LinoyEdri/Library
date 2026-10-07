@@ -7,3 +7,4 @@ export * from './catalog-reference.schema.js';
 export * from './isbn-field.js';
 export * from './book.schema.js';
 export * from './member.schema.js';
+export * from './user-management.schema.js';

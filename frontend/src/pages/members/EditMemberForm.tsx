@@ -6,7 +6,7 @@ import { AddressFormFields } from '../../components/forms/AddressFormFields';
 import { FormTextField } from '../../components/forms/FormTextField';
 import { HebrewTexts } from '../../constants/hebrew-texts';
 import { buildMemberDetailsPath } from '../../utils/build-member-paths';
-import { MemberFormActions } from './MemberFormActions';
+import { FormActions } from '../../components/forms/FormActions';
 import { useEditMemberForm } from './hooks/useEditMemberForm';
 
 const twoColumnRowStyle = {
@@ -59,7 +59,7 @@ export function EditMemberForm({ editedMember }: { editedMember: MemberResponse 
 
       <AddressFormFields control={control} />
 
-      <MemberFormActions
+      <FormActions
         isSaving={isSaving}
         cancelPath={buildMemberDetailsPath(editedMember.id)}
       />

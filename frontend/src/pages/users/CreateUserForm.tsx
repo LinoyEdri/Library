@@ -1,12 +1,17 @@
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { Role } from '@library/shared';
 import { AddressFormFields } from '../../components/forms/AddressFormFields';
+import { FormActions } from '../../components/forms/FormActions';
 import { FormTextField } from '../../components/forms/FormTextField';
 import { HebrewTexts } from '../../constants/hebrew-texts';
 import { RoutePaths } from '../../constants/route-paths';
-import { FormActions } from '../../components/forms/FormActions';
-import { useNewPersonMemberForm } from './hooks/useNewPersonMemberForm';
+import { useCreateUserForm } from './hooks/useCreateUserForm';
+
+const { users: texts } = HebrewTexts;
 
 const twoColumnRowStyle = {
   display: 'grid',
@@ -16,16 +21,18 @@ const twoColumnRowStyle = {
   },
 };
 
-// New person: account details, initial password and address
-export function NewPersonMemberForm() {
-  const { control, submitNewPerson, isSaving } = useNewPersonMemberForm();
+// New account: personal details, role, initial password and address
+export function CreateUserForm() {
+  const createForm = useCreateUserForm();
+
+  const { control } = createForm;
 
   return (
     <Stack
       component="form"
       spacing={2}
       noValidate
-      onSubmit={submitNewPerson}
+      onSubmit={createForm.submitNewUser}
     >
       <Box sx={twoColumnRowStyle}>
         <FormTextField
@@ -58,27 +65,47 @@ export function NewPersonMemberForm() {
         />
       </Box>
 
-      <FormTextField
-        control={control}
-        name="password"
-        type="password"
-        label={HebrewTexts.members.initialPasswordField}
-        helperText={HebrewTexts.members.initialPasswordHelp}
-        autoComplete="new-password"
-      />
+      <Box sx={twoColumnRowStyle}>
+        <FormTextField
+          control={control}
+          name="role"
+          select
+          label={texts.roleField}
+        >
+          {Object.values(Role).map((role) => (
+            <MenuItem
+              key={role}
+              value={role}
+            >
+              {HebrewTexts.roles[role]}
+            </MenuItem>
+          ))}
+        </FormTextField>
+
+        <FormTextField
+          control={control}
+          name="password"
+          type="password"
+          label={texts.initialPasswordField}
+          helperText={texts.initialPasswordHelp}
+          autoComplete="new-password"
+        />
+      </Box>
+
+      {createForm.isMemberRoleSelected && <Alert severity="info">{texts.memberRoleHint}</Alert>}
 
       <Typography
         variant="h6"
         component="h3"
       >
-        {HebrewTexts.members.addressTitle}
+        {texts.addressTitle}
       </Typography>
 
       <AddressFormFields control={control} />
 
       <FormActions
-        isSaving={isSaving}
-        cancelPath={RoutePaths.MEMBERS}
+        isSaving={createForm.isSaving}
+        cancelPath={RoutePaths.USERS}
       />
     </Stack>
   );

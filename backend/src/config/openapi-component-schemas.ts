@@ -294,4 +294,18 @@ export const openapiComponentSchemas = {
       address: { $ref: '#/components/schemas/AddressInput' },
     },
   },
+  ManagedUser: {
+    allOf: [
+      { $ref: '#/components/schemas/SafeUser' },
+      {
+        type: 'object',
+        properties: {
+          createdDate: { type: 'string', format: 'date-time' },
+          updatedDate: { type: 'string', format: 'date-time' },
+          disabledDate: { type: 'string', format: 'date-time', nullable: true },
+          memberId: { type: 'string', format: 'uuid', nullable: true },
+        },
+      },
+    ],
+  },
 };

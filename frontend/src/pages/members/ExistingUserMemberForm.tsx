@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import { SingleReferenceAutocomplete } from '../../components/catalog-reference/SingleReferenceAutocomplete';
 import { HebrewTexts } from '../../constants/hebrew-texts';
 import { RoutePaths } from '../../constants/route-paths';
-import { MemberFormActions } from './MemberFormActions';
+import { FormActions } from '../../components/forms/FormActions';
 import { useExistingUserMemberForm } from './hooks/useExistingUserMemberForm';
 import { memberCandidateOptionSource } from './member-candidate-option-source';
 
@@ -40,7 +40,7 @@ export function ExistingUserMemberForm() {
         {HebrewTexts.members.existingUserHelp}
       </Typography>
 
-      <MemberFormActions
+      <FormActions
         isSaving={isSaving}
         cancelPath={RoutePaths.MEMBERS}
       />
