@@ -46,7 +46,12 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(
-      new ApiRequestError(data?.message ?? error.message, status, data?.error?.details ?? []),
+      new ApiRequestError(
+        data?.message ?? error.message,
+        status,
+        data?.error?.details ?? [],
+        data?.error?.code,
+      ),
     );
   },
 );

@@ -2,7 +2,7 @@ import type { ErrorRequestHandler } from 'express';
 import { ZodError } from 'zod';
 import { logger } from '../../logger/logger.ts';
 import { ApiResponse } from '../../utils/http/api-response.ts';
-import { getStatusText } from '../../utils/http/status-text.ts';
+import { getErrorCode } from '../../utils/errors/get-error-code.ts';
 import { getErrorMessage } from '../../utils/errors/get-error-message.ts';
 import { getErrorStatusCode } from '../../utils/errors/get-error-status-code.ts';
 import { getValidationErrorDetails } from '../../utils/errors/get-validation-error-details.ts';
@@ -33,5 +33,5 @@ export const errorMiddleware: ErrorRequestHandler = (
 
   response
     .status(statusCode)
-    .json(ApiResponse.error(message, getStatusText(statusCode), details, request.requestId));
+    .json(ApiResponse.error(message, getErrorCode(error, statusCode), details, request.requestId));
 };

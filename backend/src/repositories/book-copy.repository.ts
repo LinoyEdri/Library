@@ -1,4 +1,4 @@
-import type { BookCopy, CopyStatus } from '@prisma/client';
+import { CopyStatus, type BookCopy } from '@prisma/client';
 import prisma from '../prisma/prisma.ts';
 import type { CopyStatusChange } from '../types/database/copy-status-change.types.ts';
 import type { DatabaseClient } from '../types/database/database-client.types.ts';
@@ -12,6 +12,47 @@ export const bookCopyRepository = {
       return await prisma.bookCopy.findUnique({ where: { id } });
     } catch {
       throw new InternalError('Failed to load book copy');
+    }
+  },
+
+  async findByBarcode(barcode: string): Promise<BookCopy | null> {
+    try {
+      return await prisma.bookCopy.findUnique({ where: { barcode } });
+    } catch {
+      throw new InternalError('Failed to load book copy');
+    }
+  },
+
+  // Oldest available copy of the book (by barcode), or null when every copy is taken
+  async findFirstAvailableCopyOfBook(
+    bookId: string,
+    databaseClient: DatabaseClient = prisma,
+  ): Promise<BookCopy | null> {
+    try {
+      return await databaseClient.bookCopy.findFirst({
+        where: { bookId, status: CopyStatus.AVAILABLE },
+        orderBy: { barcode: 'asc' },
+      });
+    } catch {
+      throw new InternalError('Failed to find an available copy');
+    }
+  },
+
+  // Flips AVAILABLE -> ON_LOAN only if the copy is still available, so two loans can never
+  // take the same copy at once. Returns false when someone else got it first.
+  async reserveCopyIfAvailable(
+    copyId: string,
+    databaseClient: DatabaseClient = prisma,
+  ): Promise<boolean> {
+    try {
+      const { count } = await databaseClient.bookCopy.updateMany({
+        where: { id: copyId, status: CopyStatus.AVAILABLE },
+        data: { status: CopyStatus.ON_LOAN },
+      });
+
+      return count === 1;
+    } catch {
+      throw new InternalError('Failed to reserve the copy');
     }
   },
 

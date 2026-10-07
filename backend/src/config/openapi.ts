@@ -32,6 +32,10 @@ const openapiDefinition: swaggerJSDoc.Options = {
       { name: 'Books', description: 'Book catalog (everyone views, staff edit, admins disable)' },
       { name: 'Book copies', description: 'Physical copies of books (staff)' },
       { name: 'Members', description: 'Library members (staff manage; members see their own)' },
+      {
+        name: 'Loans',
+        description: 'Loans and returns (staff lend and process; members request returns)',
+      },
       { name: 'Settings', description: 'Library-wide settings such as the loan period (admin)' },
     ],
     components: {

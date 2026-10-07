@@ -7,12 +7,20 @@ export const NETWORK_ERROR_STATUS_CODE = 0;
 export class ApiRequestError extends Error {
   readonly statusCode: number;
   readonly fieldErrors: ApiErrorDetail[];
+  // e.g. "LOAN_LIMIT_REACHED" for business rules, otherwise the status text ("NOT_FOUND")
+  readonly errorCode: string | undefined;
 
-  constructor(message: string, statusCode: number, fieldErrors: ApiErrorDetail[] = []) {
+  constructor(
+    message: string,
+    statusCode: number,
+    fieldErrors: ApiErrorDetail[] = [],
+    errorCode?: string,
+  ) {
     super(message);
 
     this.name = 'ApiRequestError';
     this.statusCode = statusCode;
     this.fieldErrors = fieldErrors;
+    this.errorCode = errorCode;
   }
 }

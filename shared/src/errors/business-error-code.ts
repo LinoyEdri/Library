@@ -1,0 +1,14 @@
+// Specific reasons a request broke a business rule. Sent as `error.code` so the frontend
+// can show the right Hebrew message instead of a generic "conflict".
+export const BusinessErrorCode = {
+  MEMBER_NOT_ACTIVE: 'MEMBER_NOT_ACTIVE',
+  BOOK_NOT_ACTIVE: 'BOOK_NOT_ACTIVE',
+  COPY_NOT_FOUND: 'COPY_NOT_FOUND',
+  COPY_NOT_AVAILABLE: 'COPY_NOT_AVAILABLE',
+  COPY_OF_OTHER_BOOK: 'COPY_OF_OTHER_BOOK',
+  NO_AVAILABLE_COPY: 'NO_AVAILABLE_COPY',
+  LOAN_LIMIT_REACHED: 'LOAN_LIMIT_REACHED',
+  LOAN_STATUS_NOT_ALLOWED: 'LOAN_STATUS_NOT_ALLOWED',
+} as const;
+
+export type BusinessErrorCode = (typeof BusinessErrorCode)[keyof typeof BusinessErrorCode];

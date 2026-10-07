@@ -121,3 +121,53 @@ export const createTestCatalogReferences = async (
 // Puts a copy on loan directly (the loans workflow arrives in a later slice)
 export const setTestCopyStatus = (copyId: string, status: CopyStatus) =>
   prisma.bookCopy.update({ where: { id: copyId }, data: { status } });
+
+let createdTestBookCounter = 0;
+
+// An active book (with its catalog references) and the given number of available copies
+export const createTestBookWithCopies = async (createdByUserId: string, copyCount = 1) => {
+  const { publisher } = await createTestCatalogReferences(createdByUserId);
+
+  createdTestBookCounter += 1;
+
+  const book = await prisma.book.create({
+    data: {
+      title: `ספר בדיקה ${createdTestBookCounter}`,
+      language: 'עברית',
+      imageUrl: '',
+      publisherId: publisher.id,
+      createdByUserId,
+    },
+  });
+
+  const copies = [];
+
+  for (let copyIndex = 1; copyIndex <= copyCount; copyIndex += 1) {
+    copies.push(
+      await prisma.bookCopy.create({
+        data: {
+          bookId: book.id,
+          barcode: `TEST-${createdTestBookCounter}-${copyIndex}-${Date.now()}`,
+          createdByUserId,
+        },
+      }),
+    );
+  }
+
+  return { book, copies };
+};
+
+export const findCopyById = (copyId: string) =>
+  prisma.bookCopy.findUnique({ where: { id: copyId } });
+
+export const findLoanById = (loanId: string) => prisma.loan.findUnique({ where: { id: loanId } });
+
+// Moves a loan's due date (e.g. into the past, to test overdue handling)
+export const setTestLoanDueDate = (loanId: string, dueDate: Date) =>
+  prisma.loan.update({ where: { id: loanId }, data: { dueDate } });
+
+export const setTestMemberStatus = (memberId: string, status: RecordStatus) =>
+  prisma.member.update({ where: { id: memberId }, data: { status } });
+
+export const setTestBookStatus = (bookId: string, status: RecordStatus) =>
+  prisma.book.update({ where: { id: bookId }, data: { status } });

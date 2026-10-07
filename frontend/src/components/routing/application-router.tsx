@@ -26,6 +26,8 @@ import { UserDetailsPage } from '../../pages/users/UserDetailsPage';
 import { UserFormPage } from '../../pages/users/UserFormPage';
 import { UsersListPage } from '../../pages/users/UsersListPage';
 import { SettingsPage } from '../../pages/settings/SettingsPage';
+import { LoanDetailsPage } from '../../pages/loans/LoanDetailsPage';
+import { LoansListPage } from '../../pages/loans/LoansListPage';
 import { CatalogSectionLayout } from '../../pages/catalog/CatalogSectionLayout';
 import { CategoriesPage } from '../../pages/catalog/CategoriesPage';
 import { PublishersPage } from '../../pages/catalog/PublishersPage';
@@ -41,7 +43,7 @@ const createProtectedPageRoute = (
   children: [{ path, element: page, handle: { breadcrumb } }],
 });
 
-const { navigation, catalog, books, members, users } = HebrewTexts;
+const { navigation, catalog, books, members, users, loans } = HebrewTexts;
 
 // One page inside the catalog section, guarded by a permission
 const createPermissionGuardedRoute = (
@@ -143,6 +145,27 @@ const membersSectionRoute: RouteObject = {
   ],
 };
 
+// Loans section: list (staff see all, members their own) and loan details
+const loansSectionRoute: RouteObject = {
+  element: (
+    <RequirePermission permissions={[Permission.LOANS_VIEW_ALL, Permission.LOANS_VIEW_OWN]} />
+  ),
+  children: [
+    {
+      path: RoutePaths.LOANS,
+      handle: { breadcrumb: navigation.loans },
+      children: [
+        { index: true, element: <LoansListPage /> },
+        {
+          path: RoutePaths.LOAN_DETAILS,
+          element: <LoanDetailsPage />,
+          handle: { breadcrumb: loans.loanDetailsBreadcrumb },
+        },
+      ],
+    },
+  ],
+};
+
 // Users section (admin): list, new user, user details and edit
 const usersSectionRoute: RouteObject = {
   element: <RequirePermission permissions={[Permission.USERS_VIEW]} />,
@@ -185,12 +208,7 @@ const protectedPageRoutes: RouteObject[] = [
   ),
   catalogSectionRoute,
   membersSectionRoute,
-  createProtectedPageRoute(
-    RoutePaths.LOANS,
-    navigation.loans,
-    [Permission.LOANS_VIEW_ALL, Permission.LOANS_VIEW_OWN],
-    <ComingSoonPage title={navigation.loans} />,
-  ),
+  loansSectionRoute,
   usersSectionRoute,
   createProtectedPageRoute(
     RoutePaths.AUDIT_LOGS,

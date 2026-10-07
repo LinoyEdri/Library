@@ -317,4 +317,74 @@ export const openapiComponentSchemas = {
       updatedDate: { type: 'string', format: 'date-time', nullable: true },
     },
   },
+
+  LoanStatus: {
+    type: 'string',
+    enum: ['ACTIVE', 'RETURN_REQUESTED', 'RETURNED', 'OVERDUE', 'CANCELLED'],
+    example: 'ACTIVE',
+  },
+
+  LoanActor: {
+    type: 'object',
+    nullable: true,
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      firstName: { type: 'string' },
+      lastName: { type: 'string' },
+    },
+  },
+
+  Loan: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      status: { $ref: '#/components/schemas/LoanStatus' },
+      createdDate: { type: 'string', format: 'date-time' },
+      dueDate: { type: 'string', format: 'date-time' },
+      returnRequestedDate: { type: 'string', format: 'date-time', nullable: true },
+      returnRequestCancelledDate: { type: 'string', format: 'date-time', nullable: true },
+      returnDate: { type: 'string', format: 'date-time', nullable: true },
+      returnProcessedDate: { type: 'string', format: 'date-time', nullable: true },
+      updatedDate: { type: 'string', format: 'date-time' },
+      isPastDue: { type: 'boolean', description: 'Open and past the due date' },
+      member: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          firstName: { type: 'string' },
+          lastName: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+        },
+      },
+      book: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          title: { type: 'string' },
+          imageUrl: { type: 'string', nullable: true },
+        },
+      },
+      copy: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          barcode: { type: 'string' },
+          status: { type: 'string', enum: ['AVAILABLE', 'ON_LOAN', 'DISABLED', 'LOST', 'DAMAGED'] },
+        },
+      },
+      createdBy: { $ref: '#/components/schemas/LoanActor' },
+      returnProcessedBy: { $ref: '#/components/schemas/LoanActor' },
+    },
+  },
+
+  CreateLoanInput: {
+    type: 'object',
+    required: ['memberId'],
+    description: 'At least one of bookId or barcode is required',
+    properties: {
+      memberId: { type: 'string', format: 'uuid' },
+      bookId: { type: 'string', format: 'uuid' },
+      barcode: { type: 'string', example: 'LIB-000001' },
+    },
+  },
 };

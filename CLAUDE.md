@@ -90,6 +90,13 @@ npm workspaces monorepo, Node >= 22.18:
 - Disabling a membership turns the account into a guest (VIEWER); reactivating restores MEMBER. The person can still log in, but cannot receive new loans while disabled.
 - Role and membership stay in step: changing a role to MEMBER creates or reactivates the membership; any other role disables an active one. Admins cannot change their own role or status, and the last active admin cannot be demoted or disabled.
 - Member search splits the text into words; every word must match a name, the email or the phone (digits only).
+- Loans:
+  - A broken business rule returns 409 with `error.code` from `BusinessErrorCode` (shared), thrown as `BusinessRuleError`. The frontend maps it to Hebrew via `HebrewTexts.loanErrors` (`getLoanErrorMessage`).
+  - Open loans are ACTIVE, OVERDUE and RETURN_REQUESTED; they count toward `maxActiveLoansPerMember`.
+  - A new loan takes the given barcode's copy, or the first AVAILABLE copy of the book (by barcode). The copy flips with a guarded `updateMany`.
+  - Members request and cancel returns on their own loans only; cancelling goes back to OVERDUE if already late.
+  - Staff process a return from any open status; the copy becomes AVAILABLE, DAMAGED or LOST. "Cancel loan" is for mistakes: the copy goes back to AVAILABLE.
+  - `markOverdueLoans` runs at startup and hourly (`jobs/overdue-loans.job.ts`), audited in the name of the oldest active admin. `isPastDue` in responses is live, so the UI is right even between runs.
 
 ## Commands
 
@@ -109,17 +116,18 @@ npx prettier --write .
 
 ## Progress
 
-| Slice | Branch                                                                                                                 | Status                  |
-| ----- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| 0     | `feature/authorization-rbac`: shared package, Zod env, auth fixes, RBAC, audit foundation, test harness                | ✅ merged               |
-| 1     | `feature/frontend-foundation`: theme/RTL, API client, auth context, router and guards, layout, login, sign-up, 403/404 | ✅ merged               |
-| 2     | `feature/profile`: PATCH /users/me, change password, logout API, Profile page                                          | ✅ merged               |
-| 3     | `feature/catalog-reference`: authors, publishers, categories API + catalog tabs and admin dialogs                      | ✅ merged               |
-| 4     | `feature/books`: books + copies API, catalog grid, book details, book form, copies table                               | ✅ merged               |
-| 5     | `feature/members`: members API (two create modes, candidates, own membership) + list, details, forms                   | ✅ merged               |
-| 6     | `feature/users`: admin user management API (roles synced with memberships, admin safety rules) + list, details, forms  | ✅ merged               |
-| 7     | `feature/settings`: SystemSetting model + migration, admin settings API, Settings page                                 | ✅ done (merge pending) |
-| 8–12  | see below                                                                                                              | ⬜                      |
+| Slice | Branch                                                                                                                 | Status             |
+| ----- | ---------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| 0     | `feature/authorization-rbac`: shared package, Zod env, auth fixes, RBAC, audit foundation, test harness                | ✅ merged          |
+| 1     | `feature/frontend-foundation`: theme/RTL, API client, auth context, router and guards, layout, login, sign-up, 403/404 | ✅ merged          |
+| 2     | `feature/profile`: PATCH /users/me, change password, logout API, Profile page                                          | ✅ merged          |
+| 3     | `feature/catalog-reference`: authors, publishers, categories API + catalog tabs and admin dialogs                      | ✅ merged          |
+| 4     | `feature/books`: books + copies API, catalog grid, book details, book form, copies table                               | ✅ merged          |
+| 5     | `feature/members`: members API (two create modes, candidates, own membership) + list, details, forms                   | ✅ merged          |
+| 6     | `feature/users`: admin user management API (roles synced with memberships, admin safety rules) + list, details, forms  | ✅ merged          |
+| 7     | `feature/settings`: SystemSetting model + migration, admin settings API, Settings page                                 | ✅ merged          |
+| 8     | `feature/loans`: loans API (business error codes, guarded copy reservation, overdue job) + list, details, dialogs      | 🔍 awaiting review |
+| 9–12  | see below                                                                                                              | ⬜                 |
 
 ## Remaining roadmap
 

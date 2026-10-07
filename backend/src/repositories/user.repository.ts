@@ -203,6 +203,18 @@ export const userRepository = {
     }
   },
 
+  // The oldest active admin; system jobs (e.g. marking overdue loans) are audited in their name
+  async findFirstActiveAdmin(): Promise<User | null> {
+    try {
+      return await prisma.user.findFirst({
+        where: { role: Role.ADMIN, status: RecordStatus.ACTIVE },
+        orderBy: { createdDate: 'asc' },
+      });
+    } catch {
+      throw new InternalError('Failed to find an administrator');
+    }
+  },
+
   async countActiveAdmins(): Promise<number> {
     try {
       return await prisma.user.count({

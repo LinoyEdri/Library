@@ -2,6 +2,7 @@ import { createApp } from './app.js';
 import { backendPort, nodeEnv } from './config/env.ts';
 import prisma from './prisma/prisma.ts';
 import { logger } from './logger/logger.ts';
+import { startOverdueLoansJob } from './jobs/overdue-loans.job.ts';
 
 const app = createApp();
 
@@ -15,8 +16,12 @@ const server = app.listen(backendPort, () => {
   );
 });
 
+// Background job: mark loans past their due date as overdue
+const stopOverdueLoansJob = startOverdueLoansJob();
+
 async function shutdown(signal: string): Promise<void> {
   logger.info({ signal }, 'Shutdown signal received');
+  stopOverdueLoansJob();
   await prisma.$disconnect(); // Disconnect from the database
 
   server.close((error) => {
