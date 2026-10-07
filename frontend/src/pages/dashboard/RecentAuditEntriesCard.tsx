@@ -1,3 +1,6 @@
+import { Link as RouterLink } from 'react-router';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Table from '@mui/material/Table';
@@ -10,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import type { DashboardAuditEntry } from '@library/shared';
 import { RoleChip } from '../../components/data-display/RoleChip';
 import { HebrewTexts } from '../../constants/hebrew-texts';
+import { RoutePaths } from '../../constants/route-paths';
 import { formatDateTime } from '../../utils/format-date-time';
 
 const { dashboard: texts } = HebrewTexts;
@@ -19,14 +23,30 @@ export function RecentAuditEntriesCard({ entries }: { entries: DashboardAuditEnt
   return (
     <Card>
       <CardContent>
-        <Typography
-          variant="h3"
+        <Box
           sx={{
+            display: 'flex',
+            alignItems: 'center',
             mb: 1,
           }}
         >
-          {texts.recentActivityTitle}
-        </Typography>
+          <Typography
+            variant="h3"
+            sx={{
+              flexGrow: 1,
+            }}
+          >
+            {texts.recentActivityTitle}
+          </Typography>
+
+          <Button
+            component={RouterLink}
+            to={RoutePaths.AUDIT_LOGS}
+            size="small"
+          >
+            {HebrewTexts.auditLogs.viewAllActivity}
+          </Button>
+        </Box>
 
         {entries.length === 0 ? (
           <Typography color="text.secondary">{texts.noRecentActivity}</Typography>

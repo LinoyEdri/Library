@@ -13,7 +13,7 @@ import { RegisterPage } from '../../pages/authentication/RegisterPage';
 import { DashboardPage } from '../../pages/dashboard/DashboardPage';
 import { NotFoundPage } from '../../pages/errors/NotFoundPage';
 import { UnauthorizedPage } from '../../pages/errors/UnauthorizedPage';
-import { ComingSoonPage } from '../../pages/placeholder/ComingSoonPage';
+import { AuditLogsPage } from '../../pages/audit-logs/AuditLogsPage';
 import { ProfilePage } from '../../pages/profile/ProfilePage';
 import { AuthorsPage } from '../../pages/catalog/AuthorsPage';
 import { BookDetailsPage } from '../../pages/books/BookDetailsPage';
@@ -214,7 +214,7 @@ const protectedPageRoutes: RouteObject[] = [
     RoutePaths.AUDIT_LOGS,
     navigation.auditLogs,
     [Permission.AUDIT_LOGS_VIEW],
-    <ComingSoonPage title={navigation.auditLogs} />,
+    <AuditLogsPage />,
   ),
   createProtectedPageRoute(
     RoutePaths.SETTINGS,
