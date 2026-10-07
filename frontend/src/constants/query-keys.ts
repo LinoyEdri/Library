@@ -11,4 +11,5 @@ export const QueryKeys = {
   USERS: ['users'],
   SETTINGS: ['settings'],
   LOANS: ['loans'],
+  DASHBOARD: ['dashboard'],
 } as const;

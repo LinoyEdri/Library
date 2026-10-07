@@ -1,6 +1,8 @@
 import { Navigate } from 'react-router';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { HebrewTexts } from '../../constants/hebrew-texts';
 import { RoutePaths } from '../../constants/route-paths';
 import { getLoadErrorMessage, isRetryableLoadError } from '../../utils/get-load-error-message';
@@ -13,7 +15,7 @@ type LoadErrorAlertProps = {
 };
 
 // Shown when a page could not load its data: the unauthorized page for a record the user
-// may not see, "not found" for a missing record, otherwise the reason plus a "try again" button
+// may not see, "not found" for a missing record, otherwise the reason with a "try again" button under it
 export function LoadErrorAlert({ error, notFoundMessage, onRetry }: LoadErrorAlertProps) {
   if (isForbiddenError(error)) {
     return (
@@ -25,21 +27,22 @@ export function LoadErrorAlert({ error, notFoundMessage, onRetry }: LoadErrorAle
   }
 
   return (
-    <Alert
-      severity="warning"
-      action={
-        isRetryableLoadError(error) && (
-          <Button
-            color="inherit"
-            size="small"
-            onClick={onRetry}
-          >
-            {HebrewTexts.common.retry}
-          </Button>
-        )
-      }
-    >
-      {getLoadErrorMessage(error, notFoundMessage)}
+    <Alert severity="warning">
+      <Typography>{getLoadErrorMessage(error, notFoundMessage)}</Typography>
+
+      {isRetryableLoadError(error) && (
+        <Button
+          variant="contained"
+          color="warning"
+          startIcon={<RefreshIcon />}
+          onClick={onRetry}
+          sx={{
+            mt: 1.5,
+          }}
+        >
+          {HebrewTexts.common.retry}
+        </Button>
+      )}
     </Alert>
   );
 }
