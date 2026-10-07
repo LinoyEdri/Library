@@ -12,6 +12,7 @@ import membersRouter from './members.route.ts';
 import settingsRouter from './settings.route.ts';
 import loansRouter from './loans.route.ts';
 import dashboardRouter from './dashboard.route.ts';
+import auditLogsRouter from './audit-logs.route.ts';
 
 export const apiRouter = Router();
 
@@ -28,3 +29,4 @@ apiRouter.use('/members', membersRouter);
 apiRouter.use('/settings', settingsRouter);
 apiRouter.use('/loans', loansRouter);
 apiRouter.use('/dashboard', dashboardRouter);
+apiRouter.use('/audit-logs', auditLogsRouter);

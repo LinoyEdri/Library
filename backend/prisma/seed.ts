@@ -15,26 +15,34 @@ import { seedPassword, nodeEnv, allowDestructiveSeed } from '../src/config/env.t
 import { SYSTEM_SETTING_DEFINITIONS, SystemSettingKey } from '@library/shared';
 import { bcryptPassword } from '../src/utils/authentication/password-hash.ts';
 
+// Every table, emptied together by one TRUNCATE
+const ALL_TABLE_NAMES = [
+  'AuditLog',
+  'SystemSetting',
+  'Loan',
+  'BookCopy',
+  'BookCategory',
+  'BookAuthor',
+  'Book',
+  'Category',
+  'Publisher',
+  'Author',
+  'Member',
+  'User',
+  'Address',
+];
+
 /**
- * Delete every row, children before parents.
+ * Empty every table at once.
  *
- * Order matters: every relation uses onDelete: Restrict, so a parent cannot be
- * removed while anything still points at it.
+ * TRUNCATE rather than DELETE: the AuditLog table is append-only (a trigger
+ * rejects UPDATE and DELETE), and row triggers do not fire on TRUNCATE.
+ * CASCADE covers the foreign keys between the tables.
  */
 async function clearDatabase(tx: Prisma.TransactionClient): Promise<void> {
-  await tx.auditLog.deleteMany();
-  await tx.systemSetting.deleteMany();
-  await tx.loan.deleteMany();
-  await tx.bookCopy.deleteMany();
-  await tx.bookCategory.deleteMany();
-  await tx.bookAuthor.deleteMany();
-  await tx.book.deleteMany();
-  await tx.category.deleteMany();
-  await tx.publisher.deleteMany();
-  await tx.author.deleteMany();
-  await tx.member.deleteMany();
-  await tx.user.deleteMany();
-  await tx.address.deleteMany();
+  const quotedTableNames = ALL_TABLE_NAMES.map((tableName) => `"${tableName}"`).join(', ');
+
+  await tx.$executeRawUnsafe(`TRUNCATE TABLE ${quotedTableNames} RESTART IDENTITY CASCADE`);
 }
 
 async function main(): Promise<void> {

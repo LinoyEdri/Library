@@ -467,4 +467,31 @@ export const openapiComponentSchemas = {
       },
     ],
   },
+
+  AuditLogEntry: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      entryNumber: { type: 'integer', example: 42, description: 'Running number shown to people' },
+      actionType: { type: 'string', example: 'USER_ROLE_CHANGED' },
+      affectedType: { type: 'string', example: 'USER' },
+      affectedRecordId: { type: 'string', nullable: true },
+      createdDate: { type: 'string', format: 'date-time' },
+      actionUserRole: { $ref: '#/components/schemas/Role' },
+      actionUser: { $ref: '#/components/schemas/LoanActor' },
+      previousValue: { nullable: true, description: 'JSON; the shape depends on the action' },
+      newValue: { nullable: true, description: 'JSON; the shape depends on the action' },
+      additionalContext: { nullable: true, description: 'JSON; extra facts about the action' },
+      affectedRecordName: {
+        type: 'string',
+        nullable: true,
+        description: 'Name of the changed record (book title, member name, setting key...)',
+      },
+      referenceNames: {
+        type: 'object',
+        additionalProperties: { type: 'string' },
+        description: 'Names of the record ids found in the values, e.g. author ids',
+      },
+    },
+  },
 };
