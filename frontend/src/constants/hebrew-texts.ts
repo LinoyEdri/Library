@@ -1,4 +1,4 @@
-import { CopyStatus, RecordStatus, Role } from '@library/shared';
+import { CopyStatus, RecordStatus, Role, SystemSettingKey } from '@library/shared';
 
 // All visible UI text in one place (Hebrew)
 export const HebrewTexts = {
@@ -292,6 +292,28 @@ export const HebrewTexts = {
     sameRole: 'למשתמש כבר יש תפקיד זה',
     userNotFound: 'המשתמש לא נמצא',
     disabledAccountNote: 'החשבון מושבת: המשתמש אינו יכול להתחבר למערכת',
+  },
+
+  settings: {
+    pageTitle: 'הגדרות מערכת',
+    pageDescription: 'ערכים שחלים על כל הספרייה. כל שינוי נרשם ביומן הפעולות.',
+    valueField: 'ערך',
+    defaultValue: (value: number) => `ברירת מחדל: ${value}`,
+    lastUpdated: (date: string) => `עודכן לאחרונה: ${date}`,
+    usingDefault: 'בשימוש ערך ברירת המחדל',
+    settingSaved: 'ההגדרה נשמרה',
+    definitions: {
+      [SystemSettingKey.LOAN_PERIOD_DAYS]: {
+        title: 'תקופת השאלה',
+        description: 'מספר הימים עד מועד ההחזרה של השאלה חדשה (1–90).',
+        unit: 'ימים',
+      },
+      [SystemSettingKey.MAX_ACTIVE_LOANS_PER_MEMBER]: {
+        title: 'מספר השאלות מרבי למנוי',
+        description: 'כמה ספרים מנוי יכול להחזיק בהשאלה בו-זמנית (1–20).',
+        unit: 'ספרים',
+      },
+    },
   },
 
   addressFields: {

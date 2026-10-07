@@ -9,6 +9,7 @@ import categoriesRouter from './categories.route.ts';
 import booksRouter from './books.route.ts';
 import bookCopiesRouter from './book-copies.route.ts';
 import membersRouter from './members.route.ts';
+import settingsRouter from './settings.route.ts';
 
 export const apiRouter = Router();
 
@@ -22,3 +23,4 @@ apiRouter.use('/categories', categoriesRouter);
 apiRouter.use('/books', booksRouter);
 apiRouter.use('/book-copies', bookCopiesRouter);
 apiRouter.use('/members', membersRouter);
+apiRouter.use('/settings', settingsRouter);

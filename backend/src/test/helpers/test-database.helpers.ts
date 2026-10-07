@@ -5,6 +5,7 @@ import { INTEGRATION_TEST_DATABASE_NAME } from '../setup/integration-test-databa
 
 // Every table, so a single TRUNCATE empties the whole database
 const ALL_TABLE_NAMES = [
+  'SystemSetting',
   'AuditLog',
   'Loan',
   'BookCopy',

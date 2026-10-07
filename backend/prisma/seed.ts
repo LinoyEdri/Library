@@ -12,6 +12,7 @@ import { Prisma, Role, CopyStatus } from '@prisma/client';
 import { EnvironmentConfigError } from '../src/types/errors/EnvironmentConfigError.ts';
 import { logger } from '../src/logger/logger.ts';
 import { seedPassword, nodeEnv, allowDestructiveSeed } from '../src/config/env.ts';
+import { SYSTEM_SETTING_DEFINITIONS, SystemSettingKey } from '@library/shared';
 import { bcryptPassword } from '../src/utils/authentication/password-hash.ts';
 
 /**
@@ -22,6 +23,7 @@ import { bcryptPassword } from '../src/utils/authentication/password-hash.ts';
  */
 async function clearDatabase(tx: Prisma.TransactionClient): Promise<void> {
   await tx.auditLog.deleteMany();
+  await tx.systemSetting.deleteMany();
   await tx.loan.deleteMany();
   await tx.bookCopy.deleteMany();
   await tx.bookCategory.deleteMany();
@@ -419,11 +421,20 @@ async function main(): Promise<void> {
     },
   );
 
+  // System settings start at their defaults (admins change them on the Settings page)
+  await prisma.systemSetting.createMany({
+    data: Object.values(SystemSettingKey).map((key) => ({
+      key,
+      value: SYSTEM_SETTING_DEFINITIONS[key].defaultValue,
+    })),
+  });
+
   // -------------------------------------------------------------------------
   // Summary (read after commit, so it reports what actually persisted)
   // -------------------------------------------------------------------------
 
   const counts = {
+    systemSettings: await prisma.systemSetting.count(),
     addresses: await prisma.address.count(),
     users: await prisma.user.count(),
     members: await prisma.member.count(),

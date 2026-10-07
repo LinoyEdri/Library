@@ -308,4 +308,13 @@ export const openapiComponentSchemas = {
       },
     ],
   },
+  SystemSetting: {
+    type: 'object',
+    properties: {
+      key: { type: 'string', enum: ['loanPeriodDays', 'maxActiveLoansPerMember'] },
+      value: { type: 'integer', example: 14 },
+      defaultValue: { type: 'integer', example: 14 },
+      updatedDate: { type: 'string', format: 'date-time', nullable: true },
+    },
+  },
 };
