@@ -1,4 +1,4 @@
-import { Role, type Prisma } from '@prisma/client';
+import { RecordStatus, Role, type Prisma } from '@prisma/client';
 import prisma from '../prisma/prisma.ts';
 import type { DatabaseClient } from '../types/database/database-client.types.ts';
 import type { MemberPageFilters } from '../types/database/member-filters.types.ts';
@@ -150,6 +150,15 @@ export const memberRepository = {
       });
     } catch {
       throw new InternalError('Failed to change member status');
+    }
+  },
+
+  // Active memberships (admin dashboard)
+  async countActive(): Promise<number> {
+    try {
+      return await prisma.member.count({ where: { status: RecordStatus.ACTIVE } });
+    } catch {
+      throw new InternalError('Failed to count members');
     }
   },
 };

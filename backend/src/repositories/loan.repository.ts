@@ -1,4 +1,5 @@
 import { LoanStatus, type Prisma } from '@prisma/client';
+import type { LibraryLoanStatistics } from '@library/shared';
 import prisma from '../prisma/prisma.ts';
 import { OPEN_LOAN_STATUSES } from '../constants/loan-statuses.ts';
 import type { DatabaseClient } from '../types/database/database-client.types.ts';
@@ -124,6 +125,59 @@ export const loanRepository = {
       });
     } catch {
       throw new InternalError('Failed to update loan');
+    }
+  },
+
+  // Library-wide loan counts for the staff dashboard
+  async countLibraryStatistics(now: Date, startOfToday: Date): Promise<LibraryLoanStatistics> {
+    try {
+      const [openLoans, overdueLoans, pendingReturns, loansCreatedToday, returnsProcessedToday] =
+        await prisma.$transaction([
+          prisma.loan.count({ where: { status: { in: OPEN_LOAN_STATUSES } } }),
+          prisma.loan.count({
+            where: { status: { in: OPEN_LOAN_STATUSES }, dueDate: { lt: now } },
+          }),
+          prisma.loan.count({ where: { status: LoanStatus.RETURN_REQUESTED } }),
+          prisma.loan.count({ where: { createdDate: { gte: startOfToday } } }),
+          prisma.loan.count({ where: { returnProcessedDate: { gte: startOfToday } } }),
+        ]);
+
+      return { openLoans, overdueLoans, pendingReturns, loansCreatedToday, returnsProcessedToday };
+    } catch {
+      throw new InternalError('Failed to count loans');
+    }
+  },
+
+  // The member's open, late and waiting-for-return loan counts
+  async countMemberStatistics(
+    memberId: string,
+    now: Date,
+  ): Promise<{ openLoans: number; overdueLoans: number; pendingReturns: number }> {
+    try {
+      const [openLoans, overdueLoans, pendingReturns] = await prisma.$transaction([
+        prisma.loan.count({ where: { memberId, status: { in: OPEN_LOAN_STATUSES } } }),
+        prisma.loan.count({
+          where: { memberId, status: { in: OPEN_LOAN_STATUSES }, dueDate: { lt: now } },
+        }),
+        prisma.loan.count({ where: { memberId, status: LoanStatus.RETURN_REQUESTED } }),
+      ]);
+
+      return { openLoans, overdueLoans, pendingReturns };
+    } catch {
+      throw new InternalError('Failed to count member loans');
+    }
+  },
+
+  // Every loan the member still holds, nearest due date first
+  async findOpenLoansOfMember(memberId: string): Promise<LoanWithDetails[]> {
+    try {
+      return await prisma.loan.findMany({
+        where: { memberId, status: { in: OPEN_LOAN_STATUSES } },
+        include: includeLoanDetails,
+        orderBy: [{ dueDate: 'asc' }, { id: 'asc' }],
+      });
+    } catch {
+      throw new InternalError('Failed to load member loans');
     }
   },
 };

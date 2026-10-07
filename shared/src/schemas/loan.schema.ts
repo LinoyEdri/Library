@@ -26,10 +26,12 @@ export const returnCopyConditions = [
   CopyStatus.LOST,
 ] as const;
 
-// Body of POST /loans/:id/return
-export const processLoanReturnSchema = z.object({
-  copyCondition: z.enum(returnCopyConditions).default(CopyStatus.AVAILABLE),
-});
+// Body of POST /loans/:id/return; no body at all means the copy came back intact
+export const processLoanReturnSchema = z
+  .object({
+    copyCondition: z.enum(returnCopyConditions).default(CopyStatus.AVAILABLE),
+  })
+  .default({ copyCondition: CopyStatus.AVAILABLE });
 
 // Query string of GET /loans. Members always get only their own loans.
 export const loanListQuerySchema = z.object({

@@ -117,4 +117,15 @@ export const bookCopyRepository = {
       throw new InternalError('Failed to change book copy status');
     }
   },
+
+  // Number of copies in each status across the library (admin dashboard)
+  async countByStatus(): Promise<{ status: CopyStatus; count: number }[]> {
+    try {
+      const groups = await prisma.bookCopy.groupBy({ by: ['status'], _count: { _all: true } });
+
+      return groups.map((group) => ({ status: group.status, count: group._count._all }));
+    } catch {
+      throw new InternalError('Failed to count book copies');
+    }
+  },
 };

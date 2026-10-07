@@ -387,4 +387,84 @@ export const openapiComponentSchemas = {
       barcode: { type: 'string', example: 'LIB-000001' },
     },
   },
+
+  MemberDashboard: {
+    type: 'object',
+    properties: {
+      kind: { type: 'string', enum: ['member'] },
+      statistics: {
+        type: 'object',
+        properties: {
+          openLoans: { type: 'integer' },
+          overdueLoans: { type: 'integer' },
+          pendingReturns: { type: 'integer' },
+          maxActiveLoans: { type: 'integer', description: 'The maxActiveLoansPerMember setting' },
+        },
+      },
+      openLoans: { type: 'array', items: { $ref: '#/components/schemas/Loan' } },
+    },
+  },
+
+  StaffDashboard: {
+    type: 'object',
+    properties: {
+      kind: { type: 'string', enum: ['staff'] },
+      statistics: {
+        type: 'object',
+        properties: {
+          openLoans: { type: 'integer' },
+          overdueLoans: { type: 'integer' },
+          pendingReturns: { type: 'integer' },
+          loansCreatedToday: { type: 'integer' },
+          returnsProcessedToday: { type: 'integer' },
+        },
+      },
+      overdueLoans: { type: 'array', items: { $ref: '#/components/schemas/Loan' } },
+      pendingReturnLoans: { type: 'array', items: { $ref: '#/components/schemas/Loan' } },
+    },
+  },
+
+  AdminDashboard: {
+    allOf: [
+      { $ref: '#/components/schemas/StaffDashboard' },
+      {
+        type: 'object',
+        properties: {
+          kind: { type: 'string', enum: ['admin'] },
+          totals: {
+            type: 'object',
+            properties: {
+              activeUsersByRole: {
+                type: 'object',
+                additionalProperties: { type: 'integer' },
+                example: { ADMIN: 1, LIBRARIAN: 1, MEMBER: 4, VIEWER: 0 },
+              },
+              activeBooks: { type: 'integer' },
+              activeMembers: { type: 'integer' },
+              copiesByStatus: {
+                type: 'object',
+                additionalProperties: { type: 'integer' },
+                example: { AVAILABLE: 20, ON_LOAN: 3, DISABLED: 0, LOST: 1, DAMAGED: 0 },
+              },
+            },
+          },
+          recentAuditEntries: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                actionType: { type: 'string', example: 'LOAN_CREATED' },
+                affectedType: { type: 'string', example: 'LOAN' },
+                affectedRecordId: { type: 'string', nullable: true },
+                createdDate: { type: 'string', format: 'date-time' },
+                actionUserRole: { $ref: '#/components/schemas/Role' },
+                actionUser: { $ref: '#/components/schemas/LoanActor' },
+              },
+            },
+          },
+        },
+      },
+    ],
+  },
 };
