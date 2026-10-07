@@ -354,4 +354,19 @@ export const userRepository = {
       throw new InternalError('Account registration failed due to an internal storage issue');
     }
   },
+
+  // Number of active accounts in each role (admin dashboard)
+  async countActiveByRole(): Promise<{ role: Role; count: number }[]> {
+    try {
+      const groups = await prisma.user.groupBy({
+        by: ['role'],
+        where: { status: RecordStatus.ACTIVE },
+        _count: { _all: true },
+      });
+
+      return groups.map((group) => ({ role: group.role, count: group._count._all }));
+    } catch {
+      throw new InternalError('Failed to count users');
+    }
+  },
 };

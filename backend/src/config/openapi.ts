@@ -23,6 +23,7 @@ const openapiDefinition: swaggerJSDoc.Options = {
     ],
     tags: [
       { name: 'Health', description: 'Application health endpoints' },
+      { name: 'Dashboard', description: 'Role-based home page numbers and short lists' },
       { name: 'Docs', description: 'API documentation endpoints' },
       { name: 'Auth', description: 'Registration, login, logout, password and current user' },
       { name: 'Users', description: 'User accounts and the current user profile' },

@@ -1,4 +1,4 @@
-import { CopyStatus, type Prisma, type RecordStatus } from '@prisma/client';
+import { CopyStatus, RecordStatus, type Prisma } from '@prisma/client';
 import prisma from '../prisma/prisma.ts';
 import type { BookPageFilters } from '../types/database/book-filters.types.ts';
 import {
@@ -175,6 +175,15 @@ export const bookRepository = {
       });
     } catch {
       throw new InternalError('Failed to change book status');
+    }
+  },
+
+  // Active books in the catalog (admin dashboard)
+  async countActive(): Promise<number> {
+    try {
+      return await prisma.book.count({ where: { status: RecordStatus.ACTIVE } });
+    } catch {
+      throw new InternalError('Failed to count books');
     }
   },
 };
