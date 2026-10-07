@@ -1,10 +1,11 @@
 import type { Prisma } from '@prisma/client';
 
-// What the user repository loads: the user, their address and (for members) the membership status
+// What the user repository loads: the user, their address and (for members) the membership id and status
 export const includeAddressAndMembership = {
   address: true,
   member: {
     select: {
+      id: true,
       status: true,
     },
   },

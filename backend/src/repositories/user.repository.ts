@@ -1,6 +1,14 @@
-import { RecordStatus, Role, type User } from '@prisma/client';
+import { RecordStatus, Role, type Prisma, type User } from '@prisma/client';
 import type { RegisterInput } from '../types/requests/authentication.requests.types.ts';
 import type { UpdateOwnProfileInput } from '../types/requests/profile.requests.types.ts';
+import type {
+  CreateUserInput,
+  UpdateUserInput,
+} from '../types/requests/user-management.requests.types.ts';
+import type { UserPageFilters } from '../types/database/user-filters.types.ts';
+import type { RecordStatusChange } from '../types/database/record-status-change.types.ts';
+import { isUniqueConstraintViolation } from '../utils/prisma/is-unique-constraint-violation.ts';
+import { splitSearchWords } from '../utils/search/split-search-words.ts';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import prisma from '../prisma/prisma.ts';
 import type { DatabaseClient } from '../types/database/database-client.types.ts';
@@ -11,6 +19,12 @@ import {
   includeAddressAndMembership,
   type UserWithAddressAndMembership,
 } from '../types/database/user-with-address-and-membership.types.ts';
+
+// Users who never logged in go last when sorting by last login (only that column can be empty)
+const buildUserOrderBy = (filters: UserPageFilters): Prisma.UserOrderByWithRelationInput =>
+  filters.sortBy === 'lastLoginDate'
+    ? { lastLoginDate: { sort: filters.sortOrder, nulls: 'last' } }
+    : { [filters.sortBy]: filters.sortOrder };
 
 export const userRepository = {
   async findByEmail(email: string): Promise<UserWithAddressAndMembership | null> {
@@ -152,6 +166,141 @@ export const userRepository = {
       });
     } catch {
       throw new InternalError('Failed to load member candidates');
+    }
+  },
+
+  // One page of users plus the total count; every search word must match name or email
+  async findPage(
+    filters: UserPageFilters,
+  ): Promise<{ users: UserWithAddressAndMembership[]; totalItems: number }> {
+    const where: Prisma.UserWhereInput = {
+      role: filters.role,
+      status: filters.status,
+      AND: splitSearchWords(filters.search).map((searchWord) => ({
+        OR: [
+          { firstName: { contains: searchWord, mode: 'insensitive' } },
+          { lastName: { contains: searchWord, mode: 'insensitive' } },
+          { email: { contains: searchWord, mode: 'insensitive' } },
+        ],
+      })),
+    };
+
+    try {
+      const [users, totalItems] = await prisma.$transaction([
+        prisma.user.findMany({
+          where,
+          include: includeAddressAndMembership,
+          orderBy: [buildUserOrderBy(filters), { id: 'asc' }],
+          skip: filters.skip,
+          take: filters.take,
+        }),
+        prisma.user.count({ where }),
+      ]);
+
+      return { users, totalItems };
+    } catch {
+      throw new InternalError('Failed to load users');
+    }
+  },
+
+  async countActiveAdmins(): Promise<number> {
+    try {
+      return await prisma.user.count({
+        where: { role: Role.ADMIN, status: RecordStatus.ACTIVE },
+      });
+    } catch {
+      throw new InternalError('Failed to count administrators');
+    }
+  },
+
+  // Name, email, phone and address of any account (admin user management)
+  async updateAccountDetails(
+    id: string,
+    details: UpdateUserInput,
+    databaseClient: DatabaseClient = prisma,
+  ): Promise<UserWithAddressAndMembership> {
+    try {
+      return await databaseClient.user.update({
+        where: { id },
+        data: {
+          firstName: details.firstName,
+          lastName: details.lastName,
+          email: details.email,
+          phoneNumber: details.phoneNumber,
+          address: {
+            update: {
+              street: details.address.street,
+              houseNumber: details.address.houseNumber,
+              apartmentOrUnit: details.address.apartmentOrUnit,
+              city: details.address.city,
+              postalCode: details.address.postalCode ?? null,
+              country: details.address.country,
+            },
+          },
+        },
+        include: includeAddressAndMembership,
+      });
+    } catch (error) {
+      if (isUniqueConstraintViolation(error)) {
+        throw new ConflictError('This email address is already registered');
+      }
+
+      throw new InternalError('Failed to update user');
+    }
+  },
+
+  async updateStatus(
+    id: string,
+    statusChange: RecordStatusChange,
+    databaseClient: DatabaseClient = prisma,
+  ): Promise<UserWithAddressAndMembership> {
+    try {
+      return await databaseClient.user.update({
+        where: { id },
+        data: statusChange,
+        include: includeAddressAndMembership,
+      });
+    } catch {
+      throw new InternalError('Failed to change user status');
+    }
+  },
+
+  // An admin creates an account with a chosen role (members are created through the member repository)
+  async createUserByAdmin(
+    user: CreateUserInput,
+    passwordHash: string,
+    createdByUserId: string,
+    databaseClient: DatabaseClient = prisma,
+  ): Promise<UserWithAddressAndMembership> {
+    try {
+      return await databaseClient.user.create({
+        data: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          passwordHash,
+          phoneNumber: user.phoneNumber,
+          role: user.role,
+          createdBy: { connect: { id: createdByUserId } },
+          address: {
+            create: {
+              street: user.address.street,
+              houseNumber: user.address.houseNumber,
+              apartmentOrUnit: user.address.apartmentOrUnit,
+              city: user.address.city,
+              postalCode: user.address.postalCode,
+              country: user.address.country,
+            },
+          },
+        },
+        include: includeAddressAndMembership,
+      });
+    } catch (error) {
+      if (isUniqueConstraintViolation(error)) {
+        throw new ConflictError('This email address is already registered');
+      }
+
+      throw new InternalError('Failed to create user');
     }
   },
 
