@@ -22,6 +22,9 @@ import { BooksCatalogPage } from '../../pages/books/BooksCatalogPage';
 import { MemberDetailsPage } from '../../pages/members/MemberDetailsPage';
 import { MemberFormPage } from '../../pages/members/MemberFormPage';
 import { MembersListPage } from '../../pages/members/MembersListPage';
+import { UserDetailsPage } from '../../pages/users/UserDetailsPage';
+import { UserFormPage } from '../../pages/users/UserFormPage';
+import { UsersListPage } from '../../pages/users/UsersListPage';
 import { CatalogSectionLayout } from '../../pages/catalog/CatalogSectionLayout';
 import { CategoriesPage } from '../../pages/catalog/CategoriesPage';
 import { PublishersPage } from '../../pages/catalog/PublishersPage';
@@ -37,7 +40,7 @@ const createProtectedPageRoute = (
   children: [{ path, element: page, handle: { breadcrumb } }],
 });
 
-const { navigation, catalog, books, members } = HebrewTexts;
+const { navigation, catalog, books, members, users } = HebrewTexts;
 
 // One page inside the catalog section, guarded by a permission
 const createPermissionGuardedRoute = (
@@ -139,6 +142,39 @@ const membersSectionRoute: RouteObject = {
   ],
 };
 
+// Users section (admin): list, new user, user details and edit
+const usersSectionRoute: RouteObject = {
+  element: <RequirePermission permissions={[Permission.USERS_VIEW]} />,
+  children: [
+    {
+      path: RoutePaths.USERS,
+      handle: { breadcrumb: navigation.users },
+      children: [
+        { index: true, element: <UsersListPage /> },
+        createPermissionGuardedRoute(
+          RoutePaths.NEW_USER,
+          users.newUserTitle,
+          Permission.USERS_MANAGE,
+          <UserFormPage />,
+        ),
+        {
+          path: RoutePaths.USER_DETAILS,
+          handle: { breadcrumb: users.userDetailsBreadcrumb },
+          children: [
+            { index: true, element: <UserDetailsPage /> },
+            createPermissionGuardedRoute(
+              RoutePaths.EDIT_USER,
+              users.editBreadcrumb,
+              Permission.USERS_MANAGE,
+              <UserFormPage />,
+            ),
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 const protectedPageRoutes: RouteObject[] = [
   createProtectedPageRoute(
     RoutePaths.DASHBOARD,
@@ -154,12 +190,7 @@ const protectedPageRoutes: RouteObject[] = [
     [Permission.LOANS_VIEW_ALL, Permission.LOANS_VIEW_OWN],
     <ComingSoonPage title={navigation.loans} />,
   ),
-  createProtectedPageRoute(
-    RoutePaths.USERS,
-    navigation.users,
-    [Permission.USERS_VIEW],
-    <ComingSoonPage title={navigation.users} />,
-  ),
+  usersSectionRoute,
   createProtectedPageRoute(
     RoutePaths.AUDIT_LOGS,
     navigation.auditLogs,

@@ -3,13 +3,13 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { HebrewTexts } from '../../constants/hebrew-texts';
 
-type MemberFormActionsProps = {
+type FormActionsProps = {
   isSaving: boolean;
   cancelPath: string;
 };
 
-// Save and cancel buttons at the bottom of the member forms
-export function MemberFormActions({ isSaving, cancelPath }: MemberFormActionsProps) {
+// Save and cancel buttons at the bottom of a form page
+export function FormActions({ isSaving, cancelPath }: FormActionsProps) {
   return (
     <Box
       sx={{

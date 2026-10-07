@@ -1,12 +1,13 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import type { ManagedUserResponse } from '@library/shared';
 import { AddressFormFields } from '../../components/forms/AddressFormFields';
+import { FormActions } from '../../components/forms/FormActions';
 import { FormTextField } from '../../components/forms/FormTextField';
 import { HebrewTexts } from '../../constants/hebrew-texts';
-import { RoutePaths } from '../../constants/route-paths';
-import { FormActions } from '../../components/forms/FormActions';
-import { useNewPersonMemberForm } from './hooks/useNewPersonMemberForm';
+import { buildUserDetailsPath } from '../../utils/build-user-paths';
+import { useEditUserForm } from './hooks/useEditUserForm';
 
 const twoColumnRowStyle = {
   display: 'grid',
@@ -16,16 +17,16 @@ const twoColumnRowStyle = {
   },
 };
 
-// New person: account details, initial password and address
-export function NewPersonMemberForm() {
-  const { control, submitNewPerson, isSaving } = useNewPersonMemberForm();
+// Edit name, email, phone and address of an account
+export function EditUserForm({ editedUser }: { editedUser: ManagedUserResponse }) {
+  const { control, submitUserDetails, isSaving } = useEditUserForm(editedUser);
 
   return (
     <Stack
       component="form"
       spacing={2}
       noValidate
-      onSubmit={submitNewPerson}
+      onSubmit={submitUserDetails}
     >
       <Box sx={twoColumnRowStyle}>
         <FormTextField
@@ -58,27 +59,18 @@ export function NewPersonMemberForm() {
         />
       </Box>
 
-      <FormTextField
-        control={control}
-        name="password"
-        type="password"
-        label={HebrewTexts.members.initialPasswordField}
-        helperText={HebrewTexts.members.initialPasswordHelp}
-        autoComplete="new-password"
-      />
-
       <Typography
         variant="h6"
         component="h3"
       >
-        {HebrewTexts.members.addressTitle}
+        {HebrewTexts.users.addressTitle}
       </Typography>
 
       <AddressFormFields control={control} />
 
       <FormActions
         isSaving={isSaving}
-        cancelPath={RoutePaths.MEMBERS}
+        cancelPath={buildUserDetailsPath(editedUser.id)}
       />
     </Stack>
   );
