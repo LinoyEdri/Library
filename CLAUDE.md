@@ -117,8 +117,9 @@ npx prettier --write .
 | 3     | `feature/catalog-reference`: authors, publishers, categories API + catalog tabs and admin dialogs                      | ✅ merged               |
 | 4     | `feature/books`: books + copies API, catalog grid, book details, book form, copies table                               | ✅ merged               |
 | 5     | `feature/members`: members API (two create modes, candidates, own membership) + list, details, forms                   | ✅ merged               |
-| 6     | `feature/users`: admin user management API (roles synced with memberships, admin safety rules) + list, details, forms  | ✅ done (merge pending) |
-| 7–12  | see below                                                                                                              | ⬜                      |
+| 6     | `feature/users`: admin user management API (roles synced with memberships, admin safety rules) + list, details, forms  | ✅ merged               |
+| 7     | `feature/settings`: SystemSetting model + migration, admin settings API, Settings page                                 | ✅ done (merge pending) |
+| 8–12  | see below                                                                                                              | ⬜                      |
 
 ## Remaining roadmap
 
@@ -185,10 +186,10 @@ List endpoints use the shared `listQuerySchema` (page, pageSize, search, sortOrd
 **7. System settings** (`feature/settings`)
 
 - Backend:
-  - New `SystemSetting` model and migration: key (unique), value Json, description, status, updatedByUserId.
+  - New `SystemSetting` model and migration: id, key (unique), value Json, updatedDate. Edit-only (no disable, no created/by-who history). Keys, rules and defaults live in `shared/src/settings`.
   - Seed keys: `loanPeriodDays=14`, `maxActiveLoansPerMember=5`.
-  - `GET /api/settings` and `PATCH /api/settings/:key`. Audit `SYSTEM_SETTING_*`.
-  - `settingsService.get(key, default)`.
+  - `GET /api/settings` and `PATCH /api/settings/:key`. Audit `SYSTEM_SETTING_UPDATED` with only the key and old/new value.
+  - `systemSettingService.getSettingValue(key)` falls back to the default when missing or invalid.
 - Frontend: Settings page.
 
 **8. Loans** (`feature/loans`)
