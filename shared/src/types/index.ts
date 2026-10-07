@@ -5,3 +5,4 @@ export * from './catalog-reference-response.types.js';
 export * from './book-response.types.js';
 export * from './member-response.types.js';
 export * from './managed-user-response.types.js';
+export * from './system-setting-response.types.js';

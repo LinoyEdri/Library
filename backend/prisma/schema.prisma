@@ -530,3 +530,17 @@ model AuditLog {
   @@index([actionType])
   @@index([createdDate])
 }
+
+/// One library-wide setting (e.g. loan period). Edit-only: the keys are fixed in code
+/// (shared/src/settings), and each value is validated by that key's rule.
+model SystemSetting {
+  id String @id @default(uuid(7))
+
+  /// Fixed key from the shared settings list, e.g. "loanPeriodDays".
+  key String @unique
+
+  /// The value, checked by the key's Zod rule before saving (e.g. a whole number of days).
+  value Json
+
+  updatedDate DateTime @updatedAt
+}
