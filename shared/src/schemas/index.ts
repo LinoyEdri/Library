@@ -8,3 +8,4 @@ export * from './isbn-field.js';
 export * from './book.schema.js';
 export * from './member.schema.js';
 export * from './user-management.schema.js';
+export * from './loan.schema.js';
