@@ -18,6 +18,7 @@ export const RoutePaths = {
   MEMBER_DETAILS: '/members/:memberId',
   EDIT_MEMBER: '/members/:memberId/edit',
   LOANS: '/loans',
+  LOAN_DETAILS: '/loans/:loanId',
   USERS: '/users',
   NEW_USER: '/users/new',
   USER_DETAILS: '/users/:userId',

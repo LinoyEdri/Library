@@ -1,4 +1,11 @@
-import { CopyStatus, RecordStatus, Role, SystemSettingKey } from '@library/shared';
+import {
+  BusinessErrorCode,
+  CopyStatus,
+  LoanStatus,
+  RecordStatus,
+  Role,
+  SystemSettingKey,
+} from '@library/shared';
 
 // All visible UI text in one place (Hebrew)
 export const HebrewTexts = {
@@ -224,7 +231,6 @@ export const HebrewTexts = {
     statusColumn: 'סטטוס מנוי',
     detailsTab: 'פרטים',
     loansTab: 'השאלות',
-    loansComingSoon: 'היסטוריית ההשאלות של המנוי תוצג כאן לאחר הוספת מודול ההשאלות.',
     personalDetailsTitle: 'פרטים אישיים',
     addressTitle: 'כתובת',
     membershipTitle: 'מנוי',
@@ -322,6 +328,90 @@ export const HebrewTexts = {
     apartmentOrUnit: 'דירה',
     city: 'עיר',
     postalCode: 'מיקוד (לא חובה)',
+  },
+
+  loans: {
+    pageTitle: 'השאלות',
+    ownLoansTitle: 'ההשאלות שלי',
+    newLoan: 'השאלה חדשה',
+    allTab: 'כל ההשאלות',
+    pendingReturnsTab: 'בקשות החזרה',
+    overdueTab: 'באיחור',
+    searchPlaceholder: 'חיפוש לפי שם ספר, ברקוד או מנוי',
+    memberFilter: 'מנוי',
+    bookFilter: 'ספר',
+    bookColumn: 'ספר',
+    memberColumn: 'מנוי',
+    barcodeColumn: 'ברקוד',
+    loanDateColumn: 'תאריך השאלה',
+    dueDateColumn: 'להחזיר עד',
+    statusColumn: 'סטטוס',
+    actionsColumn: 'פעולות',
+    noLoans: 'לא נמצאו השאלות',
+    pastDue: 'באיחור',
+    loanDetailsBreadcrumb: 'פרטי השאלה',
+    loanNotFound: 'ההשאלה לא נמצאה',
+    detailsCardTitle: 'פרטי ההשאלה',
+    timelineCardTitle: 'מהלך ההשאלה',
+    createdBy: 'הושאל על ידי',
+    returnProcessedBy: 'ההחזרה נקלטה על ידי',
+    copyStatus: 'מצב העותק',
+
+    requestReturn: 'בקשת החזרה',
+    cancelReturnRequest: 'ביטול בקשת החזרה',
+    processReturn: 'קליטת החזרה',
+    cancelLoan: 'ביטול השאלה',
+    returnRequested: 'בקשת ההחזרה נשלחה לספרייה',
+    returnRequestCancelled: 'בקשת ההחזרה בוטלה',
+    returnProcessed: 'ההחזרה נקלטה',
+    loanCancelled: 'ההשאלה בוטלה',
+    loanCreated: 'ההשאלה נוצרה בהצלחה',
+    cancelLoanConfirmationText:
+      'לבטל את השאלת "{title}"? העותק יחזור למדף. פעולה זו מיועדת להשאלה שנרשמה בטעות.',
+
+    processReturnText: 'באיזה מצב הוחזר העותק {barcode}?',
+    copyConditionField: 'מצב העותק',
+    copyConditions: {
+      [CopyStatus.AVAILABLE]: 'תקין - חוזר למדף',
+      [CopyStatus.DAMAGED]: 'פגום',
+      [CopyStatus.LOST]: 'אבד',
+    },
+
+    memberField: 'מנוי',
+    bookField: 'ספר',
+    barcodeField: 'ברקוד עותק (לא חובה)',
+    barcodeHelp: 'השאירו ריק כדי להשאיל את העותק הזמין הראשון של הספר',
+    memberRequired: 'יש לבחור מנוי',
+    bookOrBarcodeRequired: 'יש לבחור ספר או להזין ברקוד',
+    availableCopiesLabel: (count: number) => `${count} זמינים`,
+    lend: 'השאלה',
+
+    timelineCreated: 'הספר הושאל',
+    timelineDueDate: 'מועד ההחזרה',
+    timelineReturnRequested: 'נשלחה בקשת החזרה',
+    timelineReturnRequestCancelled: 'בקשת ההחזרה בוטלה',
+    timelineReturned: 'הספר הוחזר',
+    timelineCancelled: 'ההשאלה בוטלה',
+  },
+
+  loanStatuses: {
+    [LoanStatus.ACTIVE]: 'פעילה',
+    [LoanStatus.RETURN_REQUESTED]: 'ממתינה להחזרה',
+    [LoanStatus.RETURNED]: 'הוחזרה',
+    [LoanStatus.OVERDUE]: 'באיחור',
+    [LoanStatus.CANCELLED]: 'בוטלה',
+  },
+
+  // Messages for the loan business rules (error.code from the API)
+  loanErrors: {
+    [BusinessErrorCode.MEMBER_NOT_ACTIVE]: 'המנוי אינו פעיל ולא ניתן להשאיל לו ספרים',
+    [BusinessErrorCode.BOOK_NOT_ACTIVE]: 'הספר מושבת ולא ניתן להשאיל אותו',
+    [BusinessErrorCode.COPY_NOT_FOUND]: 'לא נמצא עותק עם הברקוד הזה',
+    [BusinessErrorCode.COPY_NOT_AVAILABLE]: 'העותק אינו זמין להשאלה',
+    [BusinessErrorCode.COPY_OF_OTHER_BOOK]: 'הברקוד שייך לעותק של ספר אחר',
+    [BusinessErrorCode.NO_AVAILABLE_COPY]: 'אין כרגע עותק זמין של הספר',
+    [BusinessErrorCode.LOAN_LIMIT_REACHED]: 'המנוי הגיע למספר ההשאלות הפתוחות המרבי',
+    [BusinessErrorCode.LOAN_STATUS_NOT_ALLOWED]: 'לא ניתן לבצע פעולה זו במצב הנוכחי של ההשאלה',
   },
 
   copyStatuses: {

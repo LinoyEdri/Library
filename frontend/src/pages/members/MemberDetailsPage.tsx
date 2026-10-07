@@ -2,8 +2,6 @@ import { Link as RouterLink } from 'react-router';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import LinearProgress from '@mui/material/LinearProgress';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -18,6 +16,7 @@ import { LoadErrorAlert } from '../../components/feedback/LoadErrorAlert';
 import { HebrewTexts } from '../../constants/hebrew-texts';
 import { buildEditMemberPath } from '../../utils/build-member-paths';
 import { MemberInformationPanel } from './MemberInformationPanel';
+import { MemberLoansPanel } from './MemberLoansPanel';
 import { useMemberDetailsPage, type MemberDetailsTab } from './hooks/useMemberDetailsPage';
 
 const { members: texts } = HebrewTexts;
@@ -137,13 +136,7 @@ export function MemberDetailsPage() {
 
       {detailsPage.selectedTab === 'details' && <MemberInformationPanel member={member} />}
 
-      {detailsPage.selectedTab === 'loans' && (
-        <Card>
-          <CardContent>
-            <Typography color="text.secondary">{texts.loansComingSoon}</Typography>
-          </CardContent>
-        </Card>
-      )}
+      {detailsPage.selectedTab === 'loans' && <MemberLoansPanel memberId={member.id} />}
 
       <ConfirmActionDialog
         isOpen={detailsPage.isDisableConfirmationOpen}
