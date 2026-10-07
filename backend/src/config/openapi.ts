@@ -37,6 +37,7 @@ const openapiDefinition: swaggerJSDoc.Options = {
         name: 'Loans',
         description: 'Loans and returns (staff lend and process; members request returns)',
       },
+      { name: 'Audit log', description: 'Append-only history of every change (admin, read only)' },
       { name: 'Settings', description: 'Library-wide settings such as the loan period (admin)' },
     ],
     components: {

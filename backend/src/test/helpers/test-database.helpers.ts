@@ -1,4 +1,11 @@
-import { CopyStatus, RecordStatus, Role } from '@prisma/client';
+import {
+  ActionType,
+  CopyStatus,
+  EntityType,
+  RecordStatus,
+  Role,
+  type Prisma,
+} from '@prisma/client';
 import prisma from '../../prisma/prisma.ts';
 import { bcryptPassword } from '../../utils/authentication/password-hash.ts';
 import { INTEGRATION_TEST_DATABASE_NAME } from '../setup/integration-test-database-name.ts';
@@ -47,7 +54,7 @@ export const clearIntegrationTestDatabase = async (): Promise<void> => {
 
   const quotedTableNames = ALL_TABLE_NAMES.map((tableName) => `"${tableName}"`).join(', ');
 
-  await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${quotedTableNames} CASCADE`);
+  await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${quotedTableNames} RESTART IDENTITY CASCADE`);
 };
 
 // Creates a user (with address, and a member row for MEMBER users) that can log in with TEST_USER_PASSWORD
@@ -171,3 +178,35 @@ export const setTestMemberStatus = (memberId: string, status: RecordStatus) =>
 
 export const setTestBookStatus = (bookId: string, status: RecordStatus) =>
   prisma.book.update({ where: { id: bookId }, data: { status } });
+
+type CreateTestAuditLogEntryOptions = {
+  actionType?: ActionType;
+  affectedType?: EntityType;
+  affectedRecordId?: string;
+  createdDate?: Date;
+  newValue?: Prisma.InputJsonValue;
+};
+
+// Writes an audit entry directly (for audit log list and filter tests)
+export const createTestAuditLogEntry = (
+  actionUser: { id: string; role: Role },
+  {
+    actionType = ActionType.BOOK_UPDATED,
+    affectedType = EntityType.BOOK,
+    affectedRecordId,
+    createdDate,
+    newValue = { title: 'אחרי' },
+  }: CreateTestAuditLogEntryOptions = {},
+) =>
+  prisma.auditLog.create({
+    data: {
+      actionType,
+      affectedType,
+      affectedRecordId,
+      createdDate,
+      actionUserId: actionUser.id,
+      actionUserRole: actionUser.role,
+      previousValue: { title: 'לפני' },
+      newValue,
+    },
+  });

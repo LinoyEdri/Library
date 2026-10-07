@@ -8,3 +8,4 @@ export * from './managed-user-response.types.js';
 export * from './system-setting-response.types.js';
 export * from './loan-response.types.js';
 export * from './dashboard-response.types.js';
+export * from './audit-log-response.types.js';
