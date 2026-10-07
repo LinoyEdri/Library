@@ -25,6 +25,7 @@ import { MembersListPage } from '../../pages/members/MembersListPage';
 import { UserDetailsPage } from '../../pages/users/UserDetailsPage';
 import { UserFormPage } from '../../pages/users/UserFormPage';
 import { UsersListPage } from '../../pages/users/UsersListPage';
+import { SettingsPage } from '../../pages/settings/SettingsPage';
 import { CatalogSectionLayout } from '../../pages/catalog/CatalogSectionLayout';
 import { CategoriesPage } from '../../pages/catalog/CategoriesPage';
 import { PublishersPage } from '../../pages/catalog/PublishersPage';
@@ -201,7 +202,7 @@ const protectedPageRoutes: RouteObject[] = [
     RoutePaths.SETTINGS,
     navigation.settings,
     [Permission.SETTINGS_MANAGE],
-    <ComingSoonPage title={navigation.settings} />,
+    <SettingsPage />,
   ),
   createProtectedPageRoute(
     RoutePaths.PROFILE,

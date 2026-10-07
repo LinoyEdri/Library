@@ -9,4 +9,5 @@ export const QueryKeys = {
   MEMBERS: ['members'],
   MEMBER_CANDIDATES: ['member-candidates'],
   USERS: ['users'],
+  SETTINGS: ['settings'],
 } as const;
