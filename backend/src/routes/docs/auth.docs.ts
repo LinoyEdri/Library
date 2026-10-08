@@ -243,3 +243,125 @@
  *             schema:
  *               $ref: '#/components/schemas/ApiError'
  */
+
+// FORGOT PASSWORD: CODE BY EMAIL OR SMS, THEN RESET
+/**
+ * @openapi
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Send a 6-digit password reset code by email or SMS (guests)
+ *     description: |
+ *       Finds the active account by email (`channel: EMAIL`) or phone number (`channel: SMS`, dashes allowed).
+ *       The code works for 5 minutes and closes any older open request of the account.
+ *       No email/SMS provider is configured: while SIMULATE_MESSAGE_DELIVERY is on, nothing is sent and
+ *       `simulatedMessage` carries the message so the app can show it.
+ *     operationId: forgotPassword
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             oneOf:
+ *               - type: object
+ *                 required: [channel, email]
+ *                 properties:
+ *                   channel: { type: string, enum: [EMAIL] }
+ *                   email: { type: string, format: email }
+ *               - type: object
+ *                 required: [channel, phoneNumber]
+ *                 properties:
+ *                   channel: { type: string, enum: [SMS] }
+ *                   phoneNumber: { type: string, example: '052-123-4567' }
+ *     responses:
+ *       200:
+ *         description: Code sent (or simulated)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     requestId: { type: string, format: uuid }
+ *                     channel: { type: string, enum: [EMAIL, SMS] }
+ *                     maskedDestination: { type: string, example: '052-***-4567' }
+ *                     codeExpiresDate: { type: string, format: date-time }
+ *                     simulatedMessage:
+ *                       type: object
+ *                       nullable: true
+ *                       properties:
+ *                         channel: { type: string, enum: [EMAIL, SMS] }
+ *                         recipient: { type: string }
+ *                         code: { type: string, example: '482913' }
+ *                         validMinutes: { type: integer, example: 5 }
+ *       400:
+ *         description: Invalid email or phone number
+ *       404:
+ *         description: No active account (error.code PASSWORD_RESET_ACCOUNT_NOT_FOUND)
+ *       409:
+ *         description: The phone number belongs to several accounts (error.code PASSWORD_RESET_PHONE_SHARED)
+ * /auth/forgot-password/verify:
+ *   post:
+ *     summary: Check the code; the right code opens a 5-minute reset session (guests)
+ *     description: |
+ *       5 wrong codes close the request. Returns the reset token for POST /auth/reset-password.
+ *     operationId: verifyPasswordResetCode
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [requestId, code]
+ *             properties:
+ *               requestId: { type: string, format: uuid }
+ *               code: { type: string, example: '482913' }
+ *     responses:
+ *       200:
+ *         description: Code accepted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     resetToken: { type: string }
+ *                     resetTokenExpiresDate: { type: string, format: date-time }
+ *       400:
+ *         description: Wrong code (error.code PASSWORD_RESET_CODE_INCORRECT)
+ *       409:
+ *         description: Code expired, used, replaced or locked after 5 wrong tries (error.code PASSWORD_RESET_CODE_EXPIRED)
+ * /auth/reset-password:
+ *   post:
+ *     summary: Set the new password within the reset session (guests)
+ *     description: |
+ *       Works once, within 5 minutes of the right code, for an active account. Every open request of the user
+ *       closes. Audited as USER_PASSWORD_CHANGED with context source PASSWORD_RESET and the channel.
+ *     operationId: resetPassword
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token, newPassword]
+ *             properties:
+ *               token: { type: string }
+ *               newPassword: { type: string, format: password, minLength: 8 }
+ *     responses:
+ *       200:
+ *         description: Password changed; the user can log in with it
+ *       400:
+ *         description: The new password breaks the rules
+ *       409:
+ *         description: The reset time is over or the session was used (error.code PASSWORD_RESET_SESSION_EXPIRED)
+ */

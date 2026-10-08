@@ -10,6 +10,7 @@ const enumNamesToCompare = [
   'LoanStatus',
   'EntityType',
   'ActionType',
+  'PasswordResetChannel',
 ] as const;
 
 const sortedValuesOf = (enumObject: Record<string, string>) => Object.values(enumObject).sort();

@@ -12,6 +12,7 @@ import { INTEGRATION_TEST_DATABASE_NAME } from '../setup/integration-test-databa
 
 // Every table, so a single TRUNCATE empties the whole database
 const ALL_TABLE_NAMES = [
+  'PasswordResetRequest',
   'SystemSetting',
   'AuditLog',
   'Loan',
@@ -210,3 +211,16 @@ export const createTestAuditLogEntry = (
       newValue,
     },
   });
+
+export const findPasswordResetRequestsOfUser = (userId: string) =>
+  prisma.passwordResetRequest.findMany({ where: { userId }, orderBy: { createdDate: 'asc' } });
+
+// Moves a reset request's deadlines into the past (to test the 5-minute limits)
+export const expireTestPasswordResetRequest = (requestId: string) => {
+  const oneSecondAgo = new Date(Date.now() - 1000);
+
+  return prisma.passwordResetRequest.update({
+    where: { id: requestId },
+    data: { codeExpiresDate: oneSecondAgo, resetTokenExpiresDate: oneSecondAgo },
+  });
+};

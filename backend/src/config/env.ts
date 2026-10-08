@@ -32,6 +32,7 @@ const allowDestructiveSeed = environment.ALLOW_DESTRUCTIVE_SEED;
 const jwtSecret = environment.JWT_SECRET;
 const jwtExpiresIn = environment.JWT_EXPIRES_IN;
 const corsOrigin = environment.CORS_ORIGIN;
+const simulateMessageDelivery = environment.SIMULATE_MESSAGE_DELIVERY;
 const backendPort = environment.BACKEND_PORT;
 const backendUrl = `http://localhost:${backendPort}`;
 
@@ -51,4 +52,5 @@ export {
   jwtSecret,
   jwtExpiresIn,
   corsOrigin,
+  simulateMessageDelivery,
 };

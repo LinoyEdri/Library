@@ -1,5 +1,13 @@
 import { Router } from 'express';
-import { changeOwnPasswordSchema, loginSchema, Permission, registerSchema } from '@library/shared';
+import {
+  changeOwnPasswordSchema,
+  forgotPasswordSchema,
+  loginSchema,
+  Permission,
+  registerSchema,
+  resetPasswordSchema,
+  verifyPasswordResetCodeSchema,
+} from '@library/shared';
 import { validate } from '../middlewares/validation/validate.middleware.ts';
 import { RequestLocation } from '../types/http/request-location.types.ts';
 import { requireAuthentication } from '../middlewares/auth/require-authentication.middleware.ts';
@@ -28,6 +36,25 @@ authRouter.post(
   authorizePermission(Permission.PROFILE_MANAGE),
   validate(RequestLocation.BODY, changeOwnPasswordSchema),
   authenticationController.changePassword,
+);
+
+// Forgot password (guests): send a code by email/SMS, verify it, then set the new password
+authRouter.post(
+  '/forgot-password',
+  validate(RequestLocation.BODY, forgotPasswordSchema),
+  authenticationController.forgotPassword,
+);
+
+authRouter.post(
+  '/forgot-password/verify',
+  validate(RequestLocation.BODY, verifyPasswordResetCodeSchema),
+  authenticationController.verifyPasswordResetCode,
+);
+
+authRouter.post(
+  '/reset-password',
+  validate(RequestLocation.BODY, resetPasswordSchema),
+  authenticationController.resetPassword,
 );
 
 authRouter.post('/logout', requireAuthentication, authenticationController.logout);
