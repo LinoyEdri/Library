@@ -99,6 +99,7 @@ npm workspaces monorepo, Node >= 22.18:
   - `markOverdueLoans` runs at startup and hourly (`jobs/overdue-loans.job.ts`), audited in the name of the oldest active admin. `isPastDue` in responses is live, so the UI is right even between runs.
   - `POST /loans/:id/return` accepts no body at all (the copy is then AVAILABLE).
 - Dashboard: one `GET /api/dashboard`, payload chosen by role (`kind`: `member`, `staff` for librarians, `admin` = staff + totals + 10 newest audit entries). "Overdue" there means open and past the due date (same as `isPastDue`); "today" counts from server local midnight. Hebrew labels for every `ActionType` and `EntityType` are in `hebrew-texts.ts` (reused by the audit log page).
+- Password reset (no email/SMS provider): the user picks email or SMS and gets a 6-digit code (`POST /auth/forgot-password`), types it (`POST /auth/forgot-password/verify`), then sets the password (`POST /auth/reset-password`). An unknown email/phone is reported (decided with the user); a phone shared by several accounts asks for email. The code and the reset session each last 5 minutes (countdowns in the UI; at 0 the page goes straight to login with the reason as a toast); 5 wrong codes close the request; a new request closes older ones. `PasswordResetRequest` stores only hashes. While `SIMULATE_MESSAGE_DELIVERY=true` nothing is sent and the response carries `simulatedMessage`, shown in a device-like popup (`components/simulated-messages/`) - so the code is not a real secret until a provider plugs into `message-delivery.service.ts`. Audited as `USER_PASSWORD_CHANGED` with context `source: PASSWORD_RESET` and the channel. `BusinessRuleError` takes an optional status (404 for an unknown account).
 - Audit log: read-only `GET /api/audit-logs` (+ `/:id`) for admins; `fromDate`/`toDate` are whole days (server local time), inclusive. The table is append-only: migration `make_audit_log_append_only` adds a trigger that rejects UPDATE and DELETE, so resets must use `TRUNCATE ... CASCADE` (seed and test cleanup do). The details drawer flattens stored JSON one level (`address.city`) and labels fields via `HebrewTexts.auditFieldLabels`. Entries carry a running `entryNumber` (shown instead of uuids; resets use `RESTART IDENTITY`), `affectedRecordName` and `referenceNames` (every uuid in the values looked up across all tables), so the UI shows names, not ids. Stored codes (reasons, sources, setting keys, statuses) get Hebrew via `translateStoredValue`. Long selects use `BELOW_FIELD_SELECT_MENU_PROPS` (MUI selects an option on the opening mouse-up when the menu covers the field). Side drawers need a z-index above the app bar.
 
 ## Commands
@@ -119,20 +120,21 @@ npx prettier --write .
 
 ## Progress
 
-| Slice | Branch                                                                                                                                | Status             |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| 0     | `feature/authorization-rbac`: shared package, Zod env, auth fixes, RBAC, audit foundation, test harness                               | ✅ merged          |
-| 1     | `feature/frontend-foundation`: theme/RTL, API client, auth context, router and guards, layout, login, sign-up, 403/404                | ✅ merged          |
-| 2     | `feature/profile`: PATCH /users/me, change password, logout API, Profile page                                                         | ✅ merged          |
-| 3     | `feature/catalog-reference`: authors, publishers, categories API + catalog tabs and admin dialogs                                     | ✅ merged          |
-| 4     | `feature/books`: books + copies API, catalog grid, book details, book form, copies table                                              | ✅ merged          |
-| 5     | `feature/members`: members API (two create modes, candidates, own membership) + list, details, forms                                  | ✅ merged          |
-| 6     | `feature/users`: admin user management API (roles synced with memberships, admin safety rules) + list, details, forms                 | ✅ merged          |
-| 7     | `feature/settings`: SystemSetting model + migration, admin settings API, Settings page                                                | ✅ merged          |
-| 8     | `feature/loans`: loans API (business error codes, guarded copy reservation, overdue job) + list, details, dialogs                     | ✅ merged          |
-| 9     | `feature/dashboard`: role-based GET /api/dashboard (member, staff, admin payloads) + stat cards, loan lists, recent activity          | ✅ merged          |
-| 10    | `feature/audit-log`: read-only audit log API with filters, append-only DB trigger, seed TRUNCATE reset + log page with details drawer | 🔍 awaiting review |
-| 11–12 | see below                                                                                                                             | ⬜                 |
+| Slice | Branch                                                                                                                                     | Status             |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
+| 0     | `feature/authorization-rbac`: shared package, Zod env, auth fixes, RBAC, audit foundation, test harness                                    | ✅ merged          |
+| 1     | `feature/frontend-foundation`: theme/RTL, API client, auth context, router and guards, layout, login, sign-up, 403/404                     | ✅ merged          |
+| 2     | `feature/profile`: PATCH /users/me, change password, logout API, Profile page                                                              | ✅ merged          |
+| 3     | `feature/catalog-reference`: authors, publishers, categories API + catalog tabs and admin dialogs                                          | ✅ merged          |
+| 4     | `feature/books`: books + copies API, catalog grid, book details, book form, copies table                                                   | ✅ merged          |
+| 5     | `feature/members`: members API (two create modes, candidates, own membership) + list, details, forms                                       | ✅ merged          |
+| 6     | `feature/users`: admin user management API (roles synced with memberships, admin safety rules) + list, details, forms                      | ✅ merged          |
+| 7     | `feature/settings`: SystemSetting model + migration, admin settings API, Settings page                                                     | ✅ merged          |
+| 8     | `feature/loans`: loans API (business error codes, guarded copy reservation, overdue job) + list, details, dialogs                          | ✅ merged          |
+| 9     | `feature/dashboard`: role-based GET /api/dashboard (member, staff, admin payloads) + stat cards, loan lists, recent activity               | ✅ merged          |
+| 10    | `feature/audit-log`: read-only audit log API with filters, append-only DB trigger, seed TRUNCATE reset + log page with details drawer      | ✅ merged          |
+| 11    | `feature/password-reset`: forgot password by email or SMS code (simulated delivery popup), 5-minute code and reset session with countdowns | 🔍 awaiting review |
+| 12    | see below                                                                                                                                  | ⬜                 |
 
 ## Remaining roadmap
 
