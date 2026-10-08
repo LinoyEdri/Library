@@ -369,4 +369,16 @@ export const userRepository = {
       throw new InternalError('Failed to count users');
     }
   },
+
+  // Active accounts with this phone number (digits only); a family may share one
+  async findActiveByPhoneNumber(phoneNumber: string): Promise<User[]> {
+    try {
+      return await prisma.user.findMany({
+        where: { phoneNumber, status: RecordStatus.ACTIVE },
+        take: 2,
+      });
+    } catch {
+      throw new InternalError('Database connection error during lookup');
+    }
+  },
 };

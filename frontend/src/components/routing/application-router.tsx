@@ -10,6 +10,8 @@ import { RequireAuthentication } from './RequireAuthentication';
 import { RequirePermission } from './RequirePermission';
 import { LoginPage } from '../../pages/authentication/LoginPage';
 import { RegisterPage } from '../../pages/authentication/RegisterPage';
+import { ForgotPasswordPage } from '../../pages/authentication/ForgotPasswordPage';
+import { ResetPasswordPage } from '../../pages/authentication/ResetPasswordPage';
 import { DashboardPage } from '../../pages/dashboard/DashboardPage';
 import { NotFoundPage } from '../../pages/errors/NotFoundPage';
 import { UnauthorizedPage } from '../../pages/errors/UnauthorizedPage';
@@ -237,6 +239,8 @@ export const applicationRouter = createBrowserRouter([
     children: [
       { path: RoutePaths.LOGIN, element: <LoginPage /> },
       { path: RoutePaths.REGISTER, element: <RegisterPage /> },
+      { path: RoutePaths.FORGOT_PASSWORD, element: <ForgotPasswordPage /> },
+      { path: RoutePaths.RESET_PASSWORD, element: <ResetPasswordPage /> },
     ],
   },
 

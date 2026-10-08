@@ -23,6 +23,9 @@ export const environmentVariablesSchema = z.object({
   JWT_EXPIRES_IN: z.string().min(1).default('1h'),
 
   CORS_ORIGIN: z.url(),
+
+  // No email/SMS provider yet: messages (e.g. reset codes) are returned to the app instead of sent
+  SIMULATE_MESSAGE_DELIVERY: booleanFromString.default(true),
 });
 
 export type EnvironmentVariables = z.infer<typeof environmentVariablesSchema>;

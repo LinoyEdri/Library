@@ -1,9 +1,14 @@
 import type {
   ChangeOwnPasswordInput,
+  ForgotPasswordInput,
   LoginInput,
   LoginResponse,
+  PasswordResetCodeSentResponse,
+  PasswordResetCodeVerifiedResponse,
   RegisterInput,
+  ResetPasswordInput,
   SafeUserResponse,
+  VerifyPasswordResetCodeInput,
 } from '@library/shared';
 import { sendApiRequest } from './api-client';
 
@@ -19,6 +24,24 @@ export const authenticationApi = {
 
   changeOwnPassword: (passwords: ChangeOwnPasswordInput) =>
     sendApiRequest<null>({ method: 'POST', url: '/auth/change-password', data: passwords }),
+
+  // Forgot password: send a code by email/SMS, verify it, then set the new password
+  requestPasswordResetCode: (request: ForgotPasswordInput) =>
+    sendApiRequest<PasswordResetCodeSentResponse>({
+      method: 'POST',
+      url: '/auth/forgot-password',
+      data: request,
+    }),
+
+  verifyPasswordResetCode: (verification: VerifyPasswordResetCodeInput) =>
+    sendApiRequest<PasswordResetCodeVerifiedResponse>({
+      method: 'POST',
+      url: '/auth/forgot-password/verify',
+      data: verification,
+    }),
+
+  resetPassword: (reset: ResetPasswordInput) =>
+    sendApiRequest<null>({ method: 'POST', url: '/auth/reset-password', data: reset }),
 
   logout: () => sendApiRequest<null>({ method: 'POST', url: '/auth/logout' }),
 };

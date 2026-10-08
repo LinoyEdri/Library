@@ -191,30 +191,29 @@ model User {
 
   /// Back-references for every record this user created or disabled.
   /// Each pairs with a named relation on the other model.
-  membersRegistered  Member[]    @relation("MemberRegisteredBy")
-  membersDisabled    Member[]    @relation("MemberDisabledBy")
-  authorsCreated     Author[]    @relation("AuthorCreatedBy")
-  authorsDisabled    Author[]    @relation("AuthorDisabledBy")
-  publishersCreated  Publisher[] @relation("PublisherCreatedBy")
-  publishersDisabled Publisher[] @relation("PublisherDisabledBy")
-  categoriesCreated  Category[]  @relation("CategoryCreatedBy")
-  categoriesDisabled Category[]  @relation("CategoryDisabledBy")
-  booksCreated       Book[]      @relation("BookCreatedBy")
-  booksDisabled      Book[]      @relation("BookDisabledBy")
-  bookCopiesCreated  BookCopy[]  @relation("BookCopyCreatedBy")
-  bookCopiesDisabled BookCopy[]  @relation("BookCopyDisabledBy")
-  loansCreated       Loan[]      @relation("LoanCreatedBy")
-  loansReturnHandled Loan[]      @relation("LoanReturnProcessedBy")
-  auditLogEntries    AuditLog[]  @relation("AuditLogActionUser")
+  membersRegistered     Member[]               @relation("MemberRegisteredBy")
+  membersDisabled       Member[]               @relation("MemberDisabledBy")
+  authorsCreated        Author[]               @relation("AuthorCreatedBy")
+  authorsDisabled       Author[]               @relation("AuthorDisabledBy")
+  publishersCreated     Publisher[]            @relation("PublisherCreatedBy")
+  publishersDisabled    Publisher[]            @relation("PublisherDisabledBy")
+  categoriesCreated     Category[]             @relation("CategoryCreatedBy")
+  categoriesDisabled    Category[]             @relation("CategoryDisabledBy")
+  booksCreated          Book[]                 @relation("BookCreatedBy")
+  booksDisabled         Book[]                 @relation("BookDisabledBy")
+  bookCopiesCreated     BookCopy[]             @relation("BookCopyCreatedBy")
+  bookCopiesDisabled    BookCopy[]             @relation("BookCopyDisabledBy")
+  loansCreated          Loan[]                 @relation("LoanCreatedBy")
+  loansReturnHandled    Loan[]                 @relation("LoanReturnProcessedBy")
+  auditLogEntries       AuditLog[]             @relation("AuditLogActionUser")
+  passwordResetRequests PasswordResetRequest[]
 
   /// Staff search members and users by name.
   @@index([lastName, firstName])
-
   /// Staff filter user lists by status, and by status together with role.
   /// A composite index also serves queries on its leftmost column alone,
   /// so this one covers plain "status" queries without a second index.
   @@index([status, role])
-
   /// Filtering by role alone cannot use the index above, because role is
   /// not its leftmost column. This one covers that case.
   @@index([role])
@@ -389,7 +388,6 @@ model BookAuthor {
   /// A composite primary key: the pair is the identity, so no id column is
   /// needed. It also makes attaching the same author twice impossible.
   @@id([bookId, authorId])
-
   /// The primary key indexes bookId first, so "authors of this book" is
   /// already fast. "Books by this author" needs authorId leading.
   @@index([authorId])
@@ -440,7 +438,6 @@ model BookCopy {
   /// Being leftmost, bookId is also covered on its own, so no separate
   /// @@index([bookId]) is needed.
   @@index([bookId, status])
-
   /// "Show every lost copy in the library", which the index above cannot
   /// serve because status is not its leftmost column.
   @@index([status])
@@ -485,10 +482,8 @@ model Loan {
   /// "My loans, filtered by status" - the member dashboard. Covers memberId
   /// alone as well.
   @@index([memberId, status])
-
   /// Checking whether a copy already has an open loan.
   @@index([bookCopyId])
-
   /// Overdue sweep: open loans whose dueDate has passed.
   @@index([status, dueDate])
 }
@@ -503,7 +498,7 @@ model AuditLog {
   actionType ActionType
 
   actionUserId String
-  actionUser   User  @relation("AuditLogActionUser", fields: [actionUserId], references: [id], onDelete: Restrict)
+  actionUser   User   @relation("AuditLogActionUser", fields: [actionUserId], references: [id], onDelete: Restrict)
 
   actionUserRole Role
 
@@ -525,10 +520,8 @@ model AuditLog {
   /// "Show the full history of this book" - the pair together, since
   /// affectedRecordId alone is meaningless without its type.
   @@index([affectedType, affectedRecordId])
-
   /// "What did this user do?"
   @@index([actionUserId])
-
   /// Filtering the audit page by action, and by time range.
   @@index([actionType])
   @@index([createdDate])
@@ -546,4 +539,36 @@ model SystemSetting {
   value Json
 
   updatedDate DateTime @updatedAt
+}
+
+/// How a password reset code reaches the user
+enum PasswordResetChannel {
+  EMAIL
+  SMS
+}
+
+/// One "forgot password" attempt. The user gets a 6-digit code by email or SMS; the right
+/// code opens a short reset session (resetTokenHash) in which the new password is set.
+/// Only hashes are stored. A request ends (closedDate) when the password is reset, when too
+/// many wrong codes were typed, or when a newer request replaces it.
+model PasswordResetRequest {
+  id String @id @default(uuid(7))
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  channel PasswordResetChannel
+
+  codeHash        String
+  codeExpiresDate DateTime
+  failedAttempts  Int       @default(0)
+  verifiedDate    DateTime?
+
+  resetTokenHash        String?   @unique
+  resetTokenExpiresDate DateTime?
+
+  closedDate  DateTime?
+  createdDate DateTime  @default(now())
+
+  @@index([userId])
 }

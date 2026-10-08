@@ -104,25 +104,25 @@ export function AuditLogEntryDrawer({ entry, onClose }: AuditLogEntryDrawerProps
         value={recordLabel}
       />
 
-      <Divider
-        sx={{
-          my: 2,
-        }}
-      />
+      {comparisonRows.length > 0 && (
+        <>
+          <Divider
+            sx={{
+              my: 2,
+            }}
+          />
 
-      <Typography
-        variant="h3"
-        sx={{
-          mb: 1,
-        }}
-      >
-        {texts.changesTitle}
-      </Typography>
+          <Typography
+            variant="h3"
+            sx={{
+              mb: 1,
+            }}
+          >
+            {texts.changesTitle}
+          </Typography>
 
-      {comparisonRows.length > 0 ? (
-        <AuditValueComparisonTable rows={comparisonRows} />
-      ) : (
-        <Typography color="text.secondary">{texts.noStoredValues}</Typography>
+          <AuditValueComparisonTable rows={comparisonRows} />
+        </>
       )}
 
       {contextRows.length > 0 && (

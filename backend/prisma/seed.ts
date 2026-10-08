@@ -17,6 +17,7 @@ import { bcryptPassword } from '../src/utils/authentication/password-hash.ts';
 
 // Every table, emptied together by one TRUNCATE
 const ALL_TABLE_NAMES = [
+  'PasswordResetRequest',
   'AuditLog',
   'SystemSetting',
   'Loan',
