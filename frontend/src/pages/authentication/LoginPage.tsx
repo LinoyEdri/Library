@@ -43,6 +43,17 @@ export function LoginPage() {
           autoComplete="current-password"
         />
 
+        <Link
+          component={RouterLink}
+          to={RoutePaths.FORGOT_PASSWORD}
+          variant="body2"
+          sx={{
+            alignSelf: 'flex-start',
+          }}
+        >
+          {HebrewTexts.authentication.forgotPasswordLink}
+        </Link>
+
         <Button
           type="submit"
           variant="contained"

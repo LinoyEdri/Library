@@ -1,9 +1,12 @@
-import type { BusinessErrorCode } from '@library/shared';
 import { HebrewTexts } from '../constants/hebrew-texts';
 import { ApiRequestError } from '../services/api-request-error';
 import { getHebrewErrorMessage } from './get-hebrew-error-message';
 
-const isLoanBusinessErrorCode = (errorCode: string | undefined): errorCode is BusinessErrorCode =>
+type LoanBusinessErrorCode = keyof typeof HebrewTexts.loanErrors;
+
+const isLoanBusinessErrorCode = (
+  errorCode: string | undefined,
+): errorCode is LoanBusinessErrorCode =>
   errorCode !== undefined && errorCode in HebrewTexts.loanErrors;
 
 // Loan actions: the exact broken rule (e.g. "no available copy") when the API names one
