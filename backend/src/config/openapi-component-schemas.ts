@@ -46,11 +46,11 @@ export const openapiComponentSchemas = {
 
   AddressInput: {
     type: 'object',
-    required: ['street', 'houseNumber', 'apartmentOrUnit', 'city'],
+    required: ['street', 'houseNumber', 'city'],
     properties: {
       street: { type: 'string', minLength: 1, maxLength: 255, example: 'הרצל' },
       houseNumber: { type: 'string', minLength: 1, maxLength: 50, example: '12' },
-      apartmentOrUnit: { type: 'string', minLength: 1, maxLength: 50, example: '4' },
+      apartmentOrUnit: { type: 'string', nullable: true, maxLength: 50, example: '4' },
       city: { type: 'string', minLength: 1, maxLength: 100, example: 'תל אביב' },
       postalCode: {
         type: 'string',

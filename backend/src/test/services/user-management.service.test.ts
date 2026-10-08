@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RecordStatus, Role } from '@prisma/client';
+import { BusinessErrorCode } from '@library/shared';
 import {
   LAST_ACTIVE_ADMIN_MESSAGE,
   userManagementService,
@@ -44,5 +45,22 @@ describe('last active administrator protection', () => {
     );
 
     expect(userRepository.updateStatus).not.toHaveBeenCalled();
+  });
+});
+
+describe('admin role handover', () => {
+  it('refuses to make a disabled account the admin', async () => {
+    vi.mocked(userRepository.findById).mockResolvedValue({
+      id: 'librarian-1',
+      role: Role.LIBRARIAN,
+      status: RecordStatus.DISABLED,
+      member: null,
+    } as unknown as UserWithAddressAndMembership);
+
+    await expect(
+      userManagementService.changeUserRole(actingAdmin, 'librarian-1', Role.ADMIN),
+    ).rejects.toMatchObject({ errorCode: BusinessErrorCode.ADMIN_HANDOVER_TARGET_NOT_ACTIVE });
+
+    expect(userRepository.updateRole).not.toHaveBeenCalled();
   });
 });

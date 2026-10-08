@@ -98,6 +98,7 @@ export function PersonalDetailsCard() {
               control={control}
               name="address.apartmentOrUnit"
               label={HebrewTexts.fields.apartmentOrUnit}
+              emptyAsUndefined
             />
 
             <FormTextField

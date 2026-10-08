@@ -100,7 +100,7 @@ export const userRepository = {
             update: {
               street: profile.address.street,
               houseNumber: profile.address.houseNumber,
-              apartmentOrUnit: profile.address.apartmentOrUnit,
+              apartmentOrUnit: profile.address.apartmentOrUnit ?? null,
               city: profile.address.city,
               postalCode: profile.address.postalCode ?? null,
               country: profile.address.country,
@@ -243,7 +243,7 @@ export const userRepository = {
             update: {
               street: details.address.street,
               houseNumber: details.address.houseNumber,
-              apartmentOrUnit: details.address.apartmentOrUnit,
+              apartmentOrUnit: details.address.apartmentOrUnit ?? null,
               city: details.address.city,
               postalCode: details.address.postalCode ?? null,
               country: details.address.country,
@@ -298,7 +298,7 @@ export const userRepository = {
             create: {
               street: user.address.street,
               houseNumber: user.address.houseNumber,
-              apartmentOrUnit: user.address.apartmentOrUnit,
+              apartmentOrUnit: user.address.apartmentOrUnit ?? null,
               city: user.address.city,
               postalCode: user.address.postalCode,
               country: user.address.country,
@@ -334,7 +334,7 @@ export const userRepository = {
             create: {
               street: userDto.address.street,
               houseNumber: userDto.address.houseNumber,
-              apartmentOrUnit: userDto.address.apartmentOrUnit,
+              apartmentOrUnit: userDto.address.apartmentOrUnit ?? null,
               city: userDto.address.city,
               postalCode: userDto.address.postalCode,
               country: userDto.address.country,

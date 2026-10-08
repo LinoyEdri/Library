@@ -43,7 +43,6 @@ export const useRegisterForm = () => {
       address: {
         street: '',
         houseNumber: '',
-        apartmentOrUnit: '',
         city: '',
       },
     },

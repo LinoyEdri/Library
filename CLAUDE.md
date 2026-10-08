@@ -2,7 +2,7 @@
 
 Hebrew RTL library management system: React frontend, Express and Prisma backend, PostgreSQL.
 Built in **"ping-pong" slices**: each slice adds a feature's backend API, then its frontend pages, on its own branch.
-The full requirements spec is in `README.md` (to be moved to `docs/requirements.md` in Slice 12).
+The full requirements spec is in `docs/requirements.md`; `README.md` covers setup, running, tests, reset and backup; `docs/qa-checklist.md` is the manual QA pass per role.
 
 ## Working agreement (must follow)
 
@@ -88,7 +88,9 @@ npm workspaces monorepo, Node >= 22.18:
 - Login returns one generic 401 for every failure. Failed logins on known accounts are audited; unknown emails are only logged, because an audit row needs a real user.
 - Admin is a superset of Librarian. Admin and Librarian manage book copies; only Admin disables or reactivates books.
 - Disabling a membership turns the account into a guest (VIEWER); reactivating restores MEMBER. The person can still log in, but cannot receive new loans while disabled.
-- Role and membership stay in step: changing a role to MEMBER creates or reactivates the membership; any other role disables an active one. Admins cannot change their own role or status, and the last active admin cannot be demoted or disabled.
+- Role and membership stay in step: changing a role to MEMBER creates or reactivates the membership; any other role disables an active one. Admins cannot change their own role or status.
+- **One admin only** (the seeded one): making someone ADMIN (role change or a new user) hands the role over after a warning popup. In the same transaction the acting admin becomes a **disabled VIEWER** (audited as role change + disable, context `reason: ADMIN_ROLE_HANDED_OVER`, `newAdminUserId`), so a later reactivation gives back a viewer; the frontend ends the session and shows a toast on login. Only an ACTIVE account can take the role (409 `ADMIN_HANDOVER_TARGET_NOT_ACTIVE`). The old "last active admin" guard stays for older data.
+- Address: the apartment (`apartmentOrUnit`) is optional (private houses); house number stays required.
 - Member search splits the text into words; every word must match a name, the email or the phone (digits only).
 - Loans:
   - A broken business rule returns 409 with `error.code` from `BusinessErrorCode` (shared), thrown as `BusinessRuleError`. The frontend maps it to Hebrew via `HebrewTexts.loanErrors` (`getLoanErrorMessage`).
@@ -100,7 +102,7 @@ npm workspaces monorepo, Node >= 22.18:
   - `POST /loans/:id/return` accepts no body at all (the copy is then AVAILABLE).
 - Dashboard: one `GET /api/dashboard`, payload chosen by role (`kind`: `member`, `staff` for librarians, `admin` = staff + totals + 10 newest audit entries). "Overdue" there means open and past the due date (same as `isPastDue`); "today" counts from server local midnight. Hebrew labels for every `ActionType` and `EntityType` are in `hebrew-texts.ts` (reused by the audit log page).
 - Password reset (no email/SMS provider): the user picks email or SMS and gets a 6-digit code (`POST /auth/forgot-password`), types it (`POST /auth/forgot-password/verify`), then sets the password (`POST /auth/reset-password`). An unknown email/phone is reported (decided with the user); a phone shared by several accounts asks for email. The code and the reset session each last 5 minutes (countdowns in the UI; at 0 the page goes straight to login with the reason as a toast); 5 wrong codes close the request; a new request closes older ones. `PasswordResetRequest` stores only hashes. While `SIMULATE_MESSAGE_DELIVERY=true` nothing is sent and the response carries `simulatedMessage`, shown in a device-like popup (`components/simulated-messages/`) - so the code is not a real secret until a provider plugs into `message-delivery.service.ts`. Audited as `USER_PASSWORD_CHANGED` with context `source: PASSWORD_RESET` and the channel. `BusinessRuleError` takes an optional status (404 for an unknown account).
-- Audit log: read-only `GET /api/audit-logs` (+ `/:id`) for admins; `fromDate`/`toDate` are whole days (server local time), inclusive. The table is append-only: migration `make_audit_log_append_only` adds a trigger that rejects UPDATE and DELETE, so resets must use `TRUNCATE ... CASCADE` (seed and test cleanup do). The details drawer flattens stored JSON one level (`address.city`) and labels fields via `HebrewTexts.auditFieldLabels`. Entries carry a running `entryNumber` (shown instead of uuids; resets use `RESTART IDENTITY`), `affectedRecordName` and `referenceNames` (every uuid in the values looked up across all tables), so the UI shows names, not ids. Stored codes (reasons, sources, setting keys, statuses) get Hebrew via `translateStoredValue`. Long selects use `BELOW_FIELD_SELECT_MENU_PROPS` (MUI selects an option on the opening mouse-up when the menu covers the field). Side drawers need a z-index above the app bar.
+- Audit log: read-only `GET /api/audit-logs` (+ `/:id`) for admins; `fromDate`/`toDate` are whole days (server local time), inclusive. The table is append-only: migration `make_audit_log_append_only` adds a trigger that rejects UPDATE and DELETE, so resets must use `TRUNCATE ... CASCADE` (seed and test cleanup do). A second trigger rejects INSERTs unless the transaction set `library.audit_log_writer = on`, which only `auditLogRepository.createAuditLogEntry` does (it opens its own transaction when given none) - so Prisma Studio cannot add rows. Tests must write entries through the repository (`createTestAuditLogEntry`). This blocks accidental edits, not someone with the DB password (that needs separate DB roles). The details drawer flattens stored JSON one level (`address.city`) and labels fields via `HebrewTexts.auditFieldLabels`. Entries carry a running `entryNumber` (shown instead of uuids; resets use `RESTART IDENTITY`), `affectedRecordName` and `referenceNames` (every uuid in the values looked up across all tables), so the UI shows names, not ids. Stored codes (reasons, sources, setting keys, statuses) get Hebrew via `translateStoredValue`. Long selects use `BELOW_FIELD_SELECT_MENU_PROPS` (MUI selects an option on the opening mouse-up when the menu covers the field). Side drawers need a z-index above the app bar.
 
 ## Commands
 
@@ -110,6 +112,7 @@ npm run dev                 # shared watch + backend :3001 + frontend :3000
 npm run lint && npm run typecheck && npm test
 npm run test:unit --prefix backend          # no database needed
 npm run test:integration --prefix backend   # auto-creates/migrates library_test DB
+npm run test:e2e                            # Playwright; own library_e2e DB (re-seeded each run), API :3101, app :3100
 npm run db:migrate | db:seed | db:studio    # seed needs ALLOW_DESTRUCTIVE_SEED=true
 npx prettier --write .
 ```
@@ -120,21 +123,21 @@ npx prettier --write .
 
 ## Progress
 
-| Slice | Branch                                                                                                                                     | Status             |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
-| 0     | `feature/authorization-rbac`: shared package, Zod env, auth fixes, RBAC, audit foundation, test harness                                    | ✅ merged          |
-| 1     | `feature/frontend-foundation`: theme/RTL, API client, auth context, router and guards, layout, login, sign-up, 403/404                     | ✅ merged          |
-| 2     | `feature/profile`: PATCH /users/me, change password, logout API, Profile page                                                              | ✅ merged          |
-| 3     | `feature/catalog-reference`: authors, publishers, categories API + catalog tabs and admin dialogs                                          | ✅ merged          |
-| 4     | `feature/books`: books + copies API, catalog grid, book details, book form, copies table                                                   | ✅ merged          |
-| 5     | `feature/members`: members API (two create modes, candidates, own membership) + list, details, forms                                       | ✅ merged          |
-| 6     | `feature/users`: admin user management API (roles synced with memberships, admin safety rules) + list, details, forms                      | ✅ merged          |
-| 7     | `feature/settings`: SystemSetting model + migration, admin settings API, Settings page                                                     | ✅ merged          |
-| 8     | `feature/loans`: loans API (business error codes, guarded copy reservation, overdue job) + list, details, dialogs                          | ✅ merged          |
-| 9     | `feature/dashboard`: role-based GET /api/dashboard (member, staff, admin payloads) + stat cards, loan lists, recent activity               | ✅ merged          |
-| 10    | `feature/audit-log`: read-only audit log API with filters, append-only DB trigger, seed TRUNCATE reset + log page with details drawer      | ✅ merged          |
-| 11    | `feature/password-reset`: forgot password by email or SMS code (simulated delivery popup), 5-minute code and reset session with countdowns | 🔍 awaiting review |
-| 12    | see below                                                                                                                                  | ⬜                 |
+| Slice | Branch                                                                                                                                                                                                                      | Status             |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| 0     | `feature/authorization-rbac`: shared package, Zod env, auth fixes, RBAC, audit foundation, test harness                                                                                                                     | ✅ merged          |
+| 1     | `feature/frontend-foundation`: theme/RTL, API client, auth context, router and guards, layout, login, sign-up, 403/404                                                                                                      | ✅ merged          |
+| 2     | `feature/profile`: PATCH /users/me, change password, logout API, Profile page                                                                                                                                               | ✅ merged          |
+| 3     | `feature/catalog-reference`: authors, publishers, categories API + catalog tabs and admin dialogs                                                                                                                           | ✅ merged          |
+| 4     | `feature/books`: books + copies API, catalog grid, book details, book form, copies table                                                                                                                                    | ✅ merged          |
+| 5     | `feature/members`: members API (two create modes, candidates, own membership) + list, details, forms                                                                                                                        | ✅ merged          |
+| 6     | `feature/users`: admin user management API (roles synced with memberships, admin safety rules) + list, details, forms                                                                                                       | ✅ merged          |
+| 7     | `feature/settings`: SystemSetting model + migration, admin settings API, Settings page                                                                                                                                      | ✅ merged          |
+| 8     | `feature/loans`: loans API (business error codes, guarded copy reservation, overdue job) + list, details, dialogs                                                                                                           | ✅ merged          |
+| 9     | `feature/dashboard`: role-based GET /api/dashboard (member, staff, admin payloads) + stat cards, loan lists, recent activity                                                                                                | ✅ merged          |
+| 10    | `feature/audit-log`: read-only audit log API with filters, append-only DB trigger, seed TRUNCATE reset + log page with details drawer                                                                                       | ✅ merged          |
+| 11    | `feature/password-reset`: forgot password by email or SMS code (simulated delivery popup), 5-minute code and reset session with countdowns                                                                                  | ✅ merged          |
+| 12    | `chore/qa-docs`: Playwright E2E per role + axe/RTL checks, QA checklist, README rewrite (spec moved to docs/), route code splitting, bcrypt removed, server-down view, single admin, optional apartment, audit insert guard | 🔍 awaiting review |
 
 ## Remaining roadmap
 
@@ -253,7 +256,10 @@ List endpoints use the shared `listQuerySchema` (page, pageSize, search, sortOrd
 
 ## Known notes
 
-- `bcrypt` is still a backend dependency but unused (`bcryptjs` is used). Remove it eventually.
 - Prettier puts single-prop JSX elements on one line. That is expected and accepted.
 - Docker on the user's machine holds port 3000; Vite uses `strictPort` so it fails loudly instead of taking 3001.
 - Placeholder image services cannot render Hebrew; books without an image use the app's built-in cover.
+- Pages are lazy-loaded (`components/routing/lazy-pages.ts`, Suspense in `AppLayout` and `App`); `vite.config.ts` splits react/mui/vendor chunks. Add new pages to `lazy-pages.ts`, not as direct imports in the router.
+- E2E (`e2e/`): Playwright workspace, one worker, tests in file order on one seeded DB. Tests use `HebrewTexts` for selectors and seed accounts from `tests/helpers/seed-accounts.ts`; a test that changes seed data must restore it or use data no other test uses. First run needs `npx playwright install chromium`.
+- Server down: `api-client` turns no-response and envelope-less 5xx (the Vite proxy's empty 500) into `NETWORK_ERROR_STATUS_CODE`. `AppLayout` (`useServerUnavailableState`) then hides the page (kept mounted so its queries can retry) and shows only the page title (last breadcrumb) with "אין חיבור לשרת" and "נסו שוב"; `RequireAuthentication` shows the same full-screen when `/auth/me` cannot be checked, instead of logging out.
+- Gold (`warning`) is light: text on gold is navy (`contrastText`); gold text on white must use `warning.dark` (outlined warning chips do via a theme variant). axe fails the E2E run otherwise.

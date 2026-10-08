@@ -19,7 +19,7 @@ const toFormValues = (user: ManagedUserResponse): EditUserFormInput => ({
   address: {
     street: user.address.street,
     houseNumber: user.address.houseNumber,
-    apartmentOrUnit: user.address.apartmentOrUnit,
+    apartmentOrUnit: user.address.apartmentOrUnit ?? undefined,
     city: user.address.city,
     postalCode: user.address.postalCode ?? undefined,
     country: user.address.country,

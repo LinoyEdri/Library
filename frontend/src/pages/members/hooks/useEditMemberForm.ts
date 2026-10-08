@@ -20,7 +20,7 @@ const toFormValues = (member: MemberResponse): MemberDetailsFormInput => ({
   address: {
     street: member.address.street,
     houseNumber: member.address.houseNumber,
-    apartmentOrUnit: member.address.apartmentOrUnit,
+    apartmentOrUnit: member.address.apartmentOrUnit ?? undefined,
     city: member.address.city,
     postalCode: member.address.postalCode ?? undefined,
     country: member.address.country,

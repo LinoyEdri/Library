@@ -10,7 +10,8 @@
   "workspaces": [
     "shared",
     "backend",
-    "frontend"
+    "frontend",
+    "e2e"
   ],
   "scripts": {
     "postinstall": "npm run build --prefix shared",
@@ -22,8 +23,9 @@
     "build": "npm run build:shared && npm run build --prefix backend && npm run build --prefix frontend",
     "start": "npm run start --prefix backend",
     "lint": "npm run lint --prefix backend && npm run lint --prefix frontend",
-    "typecheck": "npm run build:shared && npm run typecheck --prefix shared && npm run typecheck --prefix backend && npm run typecheck --prefix frontend",
+    "typecheck": "npm run build:shared && npm run typecheck --prefix shared && npm run typecheck --prefix backend && npm run typecheck --prefix frontend && npm run typecheck --prefix e2e",
     "test": "npm run build:shared && npm run test --prefix backend --if-present && npm run test --prefix frontend --if-present",
+    "test:e2e": "npm run build:shared && npm run test --prefix e2e",
     "clean": "npm run clean --prefix shared && npm run clean --prefix backend && npm run clean --prefix frontend",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

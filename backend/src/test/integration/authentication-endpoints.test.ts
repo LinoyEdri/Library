@@ -63,6 +63,17 @@ describe('POST /api/auth/register', () => {
     expect(JSON.stringify(auditEntries[0].newValue)).not.toContain('passwordHash');
   });
 
+  it('accepts an address without an apartment (a private house)', async () => {
+    const privateHouseAddress = { ...validRegistrationBody.address, apartmentOrUnit: undefined };
+
+    const response = await request(application)
+      .post('/api/auth/register')
+      .send({ ...validRegistrationBody, address: privateHouseAddress });
+
+    expect(response.status).toBe(StatusCodes.CREATED);
+    expect(response.body.data.address.apartmentOrUnit).toBeNull();
+  });
+
   it('returns 409 when the email is already registered', async () => {
     await request(application).post('/api/auth/register').send(validRegistrationBody);
 

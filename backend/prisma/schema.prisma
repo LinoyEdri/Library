@@ -131,7 +131,7 @@ model Address {
   id              String  @id @default(uuid(7))
   street          String
   houseNumber     String
-  apartmentOrUnit String
+  apartmentOrUnit String?
   city            String
   postalCode      String?
   country         String  @default("IL")

@@ -9,6 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { Role, type ManagedUserResponse } from '@library/shared';
+import { ConfirmActionDialog } from '../../components/feedback/ConfirmActionDialog';
 import { HebrewTexts } from '../../constants/hebrew-texts';
 import { useChangeUserRoleDialog } from './hooks/useChangeUserRoleDialog';
 
@@ -73,6 +74,15 @@ export function ChangeUserRoleDialog({ user, onClose }: ChangeUserRoleDialogProp
           {HebrewTexts.common.save}
         </Button>
       </DialogActions>
+
+      <ConfirmActionDialog
+        isOpen={roleDialog.isAdminHandoverWarningOpen}
+        title={texts.adminHandoverTitle}
+        message={texts.adminHandoverWarning(roleDialog.newAdminName)}
+        isConfirming={roleDialog.isSaving}
+        onConfirm={roleDialog.confirmAdminHandover}
+        onCancel={roleDialog.cancelAdminHandover}
+      />
     </Dialog>
   );
 }
