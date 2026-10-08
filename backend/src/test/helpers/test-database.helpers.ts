@@ -7,6 +7,7 @@ import {
   type Prisma,
 } from '@prisma/client';
 import prisma from '../../prisma/prisma.ts';
+import { auditLogRepository } from '../../repositories/audit-log.repository.ts';
 import { bcryptPassword } from '../../utils/authentication/password-hash.ts';
 import { INTEGRATION_TEST_DATABASE_NAME } from '../setup/integration-test-database-name.ts';
 
@@ -188,7 +189,7 @@ type CreateTestAuditLogEntryOptions = {
   newValue?: Prisma.InputJsonValue;
 };
 
-// Writes an audit entry directly (for audit log list and filter tests)
+// Writes an audit entry through the repository (the database rejects audit inserts from anywhere else)
 export const createTestAuditLogEntry = (
   actionUser: { id: string; role: Role },
   {
@@ -199,17 +200,15 @@ export const createTestAuditLogEntry = (
     newValue = { title: 'אחרי' },
   }: CreateTestAuditLogEntryOptions = {},
 ) =>
-  prisma.auditLog.create({
-    data: {
-      actionType,
-      affectedType,
-      affectedRecordId,
-      createdDate,
-      actionUserId: actionUser.id,
-      actionUserRole: actionUser.role,
-      previousValue: { title: 'לפני' },
-      newValue,
-    },
+  auditLogRepository.createAuditLogEntry({
+    actionType,
+    affectedType,
+    affectedRecordId,
+    createdDate,
+    actionUserId: actionUser.id,
+    actionUserRole: actionUser.role,
+    previousValue: { title: 'לפני' },
+    newValue,
   });
 
 export const findPasswordResetRequestsOfUser = (userId: string) =>

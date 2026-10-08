@@ -117,7 +117,7 @@ export const memberRepository = {
                 create: {
                   street: person.address.street,
                   houseNumber: person.address.houseNumber,
-                  apartmentOrUnit: person.address.apartmentOrUnit,
+                  apartmentOrUnit: person.address.apartmentOrUnit ?? null,
                   city: person.address.city,
                   postalCode: person.address.postalCode,
                   country: person.address.country,

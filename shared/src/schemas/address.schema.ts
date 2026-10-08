@@ -17,11 +17,14 @@ export const addressSchema = z.object({
     fieldName: 'מספר בית',
   }),
 
+  // Optional: a private house has no apartment number
   apartmentOrUnit: createStringField({
     min: 1,
     max: 50,
     fieldName: 'דירה',
-  }),
+  })
+    .nullable()
+    .optional(),
 
   city: createStringField({
     min: 1,

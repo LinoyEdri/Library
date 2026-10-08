@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { StatusCodes } from 'http-status-codes';
 import { ActionType, RecordStatus, Role } from '@prisma/client';
+import { BusinessErrorCode } from '@library/shared';
 import { createApp } from '../../app.ts';
 import {
   clearIntegrationTestDatabase,
@@ -207,12 +208,64 @@ describe('admin safety rules', () => {
     expect(disableResponse.status).toBe(StatusCodes.FORBIDDEN);
   });
 
-  it('lets an admin demote another admin while one active admin remains', async () => {
-    const secondAdmin = await createUserAsAdmin(Role.ADMIN);
+  it('hands the admin role over: the old admin becomes a disabled viewer, still a viewer when reactivated', async () => {
+    const librarian = await createUserAsAdmin(Role.LIBRARIAN);
 
-    const response = await changeRole(secondAdmin.id, Role.LIBRARIAN);
+    const response = await changeRole(librarian.id, Role.ADMIN);
 
     expect(response.status).toBe(StatusCodes.OK);
+    expect(response.body.data.role).toBe(Role.ADMIN);
+
+    // The old admin's session ends at once
+    const oldAdminRequest = await request(application)
+      .get('/api/users')
+      .set('Authorization', context.adminHeader);
+
+    expect(oldAdminRequest.status).toBe(StatusCodes.UNAUTHORIZED);
+
+    const newAdminHeader = authorizationHeaderFor({ ...librarian, role: Role.ADMIN });
+
+    const reactivateResponse = await request(application)
+      .post(`/api/users/${context.adminId}/reactivate`)
+      .set('Authorization', newAdminHeader);
+
+    expect(reactivateResponse.body.data).toMatchObject({
+      role: Role.VIEWER,
+      status: RecordStatus.ACTIVE,
+    });
+
+    const auditActions = (await findAuditLogEntriesForRecord(context.adminId)).map(
+      (entry) => entry.actionType,
+    );
+
+    expect(auditActions).toEqual(
+      expect.arrayContaining([ActionType.USER_ROLE_CHANGED, ActionType.USER_DISABLED]),
+    );
+  });
+
+  it('creating a new ADMIN also hands the role over', async () => {
+    const newAdmin = await createUserAsAdmin(Role.ADMIN);
+
+    expect(newAdmin.role).toBe(Role.ADMIN);
+
+    const oldAdminRequest = await request(application)
+      .get('/api/users')
+      .set('Authorization', context.adminHeader);
+
+    expect(oldAdminRequest.status).toBe(StatusCodes.UNAUTHORIZED);
+  });
+
+  it('refuses to make a disabled account the admin (409 with a code)', async () => {
+    const librarian = await createUserAsAdmin(Role.LIBRARIAN);
+
+    await request(application)
+      .post(`/api/users/${librarian.id}/disable`)
+      .set('Authorization', context.adminHeader);
+
+    const response = await changeRole(librarian.id, Role.ADMIN);
+
+    expect(response.status).toBe(StatusCodes.CONFLICT);
+    expect(response.body.error.code).toBe(BusinessErrorCode.ADMIN_HANDOVER_TARGET_NOT_ACTIVE);
   });
 
   it('disables and reactivates an account; a disabled account cannot log in', async () => {

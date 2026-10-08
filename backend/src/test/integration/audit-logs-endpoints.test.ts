@@ -209,4 +209,21 @@ describe('append-only audit log table', () => {
 
     expect(storedEntry?.affectedRecordId).toBe('book-1');
   });
+
+  it('rejects adding an entry from outside the application (e.g. Prisma Studio)', async () => {
+    const { actionUserId, actionUserRole } = await prisma.auditLog.findUniqueOrThrow({
+      where: { id: context.oldEntryId },
+    });
+
+    await expect(
+      prisma.auditLog.create({
+        data: {
+          actionType: ActionType.BOOK_UPDATED,
+          affectedType: EntityType.BOOK,
+          actionUserId,
+          actionUserRole,
+        },
+      }),
+    ).rejects.toThrow();
+  });
 });

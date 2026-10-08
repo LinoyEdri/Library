@@ -6,7 +6,7 @@ export interface AddressResponse {
   id: string;
   street: string;
   houseNumber: string;
-  apartmentOrUnit: string;
+  apartmentOrUnit: string | null;
   city: string;
   postalCode: string | null;
   country: string;

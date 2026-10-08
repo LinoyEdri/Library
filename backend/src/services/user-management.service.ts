@@ -1,4 +1,5 @@
 import { ActionType, EntityType, RecordStatus, Role } from '@prisma/client';
+import { BusinessErrorCode } from '@library/shared';
 import { runInDatabaseTransaction } from '../prisma/run-in-database-transaction.ts';
 import { memberRepository } from '../repositories/member.repository.ts';
 import { userRepository } from '../repositories/user.repository.ts';
@@ -13,6 +14,7 @@ import type {
 } from '../types/requests/user-management.requests.types.ts';
 import type { ManagedUserRecordResponse } from '../types/responses/managed-user.response.types.ts';
 import type { PaginatedResult } from '../types/responses/paginated-result.response.types.ts';
+import { BusinessRuleError } from '../types/errors/BusinessRuleError.ts';
 import { ConflictError } from '../types/errors/ConflictError.ts';
 import { ForbiddenError } from '../types/errors/ForbiddenError.ts';
 import { NotFoundError } from '../types/errors/NotFoundError.ts';
@@ -47,13 +49,67 @@ const assertNotOwnAccount = (actingUser: AuthenticatedUser, targetUserId: string
   }
 };
 
-// The system must always keep at least one active administrator
+// The system must always keep an active administrator (guards data from before the single-admin rule)
 const assertNotLastActiveAdmin = async (user: UserWithAddressAndMembership) => {
   const isActiveAdmin = user.role === Role.ADMIN && user.status === RecordStatus.ACTIVE;
 
   if (isActiveAdmin && (await userRepository.countActiveAdmins()) <= 1) {
     throw new ConflictError(LAST_ACTIVE_ADMIN_MESSAGE);
   }
+};
+
+// There is only one admin: the new admin must be an active account
+const assertCanBecomeAdmin = (user: UserWithAddressAndMembership) => {
+  if (user.status !== RecordStatus.ACTIVE) {
+    throw new BusinessRuleError(
+      BusinessErrorCode.ADMIN_HANDOVER_TARGET_NOT_ACTIVE,
+      'Only an active account can become the administrator',
+    );
+  }
+};
+
+// Making someone else admin hands the role over: the acting admin becomes a disabled viewer,
+// so reactivating that account later gives back a viewer only (audited as role change + disable)
+const handOverAdminRole = async (
+  actingUser: AuthenticatedUser,
+  newAdminUserId: string,
+  transactionClient: DatabaseClient,
+) => {
+  await userRepository.updateRole(actingUser.id, Role.VIEWER, transactionClient);
+
+  await userRepository.updateStatus(
+    actingUser.id,
+    buildDisableStatusChange(actingUser.id),
+    transactionClient,
+  );
+
+  const auditBase = {
+    actionUserId: actingUser.id,
+    actionUserRole: actingUser.role,
+    affectedType: EntityType.USER,
+    affectedRecordId: actingUser.id,
+    additionalContext: { reason: 'ADMIN_ROLE_HANDED_OVER', newAdminUserId },
+  };
+
+  await auditLogService.recordAuditLogEntry(
+    {
+      ...auditBase,
+      actionType: ActionType.USER_ROLE_CHANGED,
+      previousValue: { role: Role.ADMIN },
+      newValue: { role: Role.VIEWER },
+    },
+    transactionClient,
+  );
+
+  await auditLogService.recordAuditLogEntry(
+    {
+      ...auditBase,
+      actionType: ActionType.USER_DISABLED,
+      previousValue: { status: RecordStatus.ACTIVE },
+      newValue: { status: RecordStatus.DISABLED },
+    },
+    transactionClient,
+  );
 };
 
 // Name, email and phone as stored in USER_UPDATED audit entries
@@ -185,7 +241,8 @@ export const userManagementService = {
     return toManagedUserResponse(await findUserOrThrow(userId));
   },
 
-  // MEMBER accounts also get their membership in the same transaction
+  // MEMBER accounts also get their membership in the same transaction;
+  // a new ADMIN takes over the admin role from the acting admin
   async createUser(
     actingUser: AuthenticatedUser,
     newUser: CreateUserInput,
@@ -230,6 +287,10 @@ export const userManagementService = {
         actingUser.id,
         transactionClient,
       );
+
+      if (newUser.role === Role.ADMIN) {
+        await handOverAdminRole(actingUser, user.id, transactionClient);
+      }
 
       return user.id;
     });
@@ -303,7 +364,8 @@ export const userManagementService = {
     return toManagedUserResponse(updatedUser);
   },
 
-  // Changes the role and keeps the membership in step (MEMBER <-> active membership)
+  // Changes the role and keeps the membership in step (MEMBER <-> active membership).
+  // Choosing ADMIN hands the admin role over from the acting admin.
   async changeUserRole(
     actingUser: AuthenticatedUser,
     userId: string,
@@ -317,7 +379,9 @@ export const userManagementService = {
       throw new ConflictError('The user already has this role');
     }
 
-    if (newRole !== Role.ADMIN) {
+    if (newRole === Role.ADMIN) {
+      assertCanBecomeAdmin(user);
+    } else {
       await assertNotLastActiveAdmin(user);
     }
 
@@ -338,6 +402,10 @@ export const userManagementService = {
       );
 
       await syncMembershipWithRole(actingUser, user, newRole, transactionClient);
+
+      if (newRole === Role.ADMIN) {
+        await handOverAdminRole(actingUser, userId, transactionClient);
+      }
     });
 
     return toManagedUserResponse(await findUserOrThrow(userId));

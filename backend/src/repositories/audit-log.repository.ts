@@ -8,15 +8,31 @@ import type { DatabaseClient } from '../types/database/database-client.types.ts'
 import type { AuditLogPageFilters } from '../types/database/audit-log-filters.types.ts';
 import { InternalError } from '../types/errors/InternalError.ts';
 
+// The database only accepts audit inserts from a transaction marked with this setting
+// (migration allow_audit_log_inserts_only_from_application), so Prisma Studio cannot add rows
+const markTransactionAsAuditLogWriter = (transactionClient: DatabaseClient) =>
+  transactionClient.$executeRaw`SELECT set_config('library.audit_log_writer', 'on', true)`;
+
 // Append-only: this repository can create and read audit entries, never update or delete them
-// (a database trigger enforces the same rule)
+// (database triggers enforce the same rules)
 export const auditLogRepository = {
+  // Pass the open transaction's client; without one, the entry gets its own transaction
   async createAuditLogEntry(
     auditLogData: Prisma.AuditLogUncheckedCreateInput,
-    databaseClient: DatabaseClient = prisma,
+    databaseClient?: DatabaseClient,
   ): Promise<AuditLog> {
+    const writeEntry = async (transactionClient: DatabaseClient) => {
+      await markTransactionAsAuditLogWriter(transactionClient);
+
+      return transactionClient.auditLog.create({ data: auditLogData });
+    };
+
+    const isInsideTransaction = databaseClient !== undefined && databaseClient !== prisma;
+
     try {
-      return await databaseClient.auditLog.create({ data: auditLogData });
+      return isInsideTransaction
+        ? await writeEntry(databaseClient)
+        : await prisma.$transaction(writeEntry);
     } catch {
       throw new InternalError('Failed to write audit log entry');
     }

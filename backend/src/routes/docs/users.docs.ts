@@ -101,7 +101,7 @@
  *         description: Only admins manage users
  *   post:
  *     summary: Create a user with any role (admin)
- *     description: MEMBER accounts also get their membership in the same transaction. Audits USER_CREATED (and MEMBER_CREATED).
+ *     description: MEMBER accounts also get their membership in the same transaction. Audits USER_CREATED (and MEMBER_CREATED). Creating an ADMIN hands the admin role over; the acting admin's account becomes a disabled VIEWER.
  *     operationId: createUser
  *     tags:
  *       - Users
@@ -199,8 +199,10 @@
  *     summary: Change a user's role (admin)
  *     description: |
  *       Keeps the membership in step with the role: becoming MEMBER creates or reactivates the membership;
- *       any other role disables an active membership. Admins cannot change their own role, and the last
- *       active admin cannot be demoted (409).
+ *       any other role disables an active membership. Admins cannot change their own role.
+ *       There is only one admin: choosing ADMIN hands the role over, and the acting admin's account becomes
+ *       a disabled VIEWER (still a viewer if reactivated). Only an active account can become admin
+ *       (409, error.code ADMIN_HANDOVER_TARGET_NOT_ACTIVE).
  *     operationId: changeUserRole
  *     tags:
  *       - Users
