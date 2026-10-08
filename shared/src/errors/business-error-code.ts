@@ -1,0 +1,24 @@
+// Specific reasons a request broke a business rule. Sent as `error.code` so the frontend
+// can show the right Hebrew message instead of a generic "conflict".
+export const BusinessErrorCode = {
+  MEMBER_NOT_ACTIVE: 'MEMBER_NOT_ACTIVE',
+  BOOK_NOT_ACTIVE: 'BOOK_NOT_ACTIVE',
+  COPY_NOT_FOUND: 'COPY_NOT_FOUND',
+  COPY_NOT_AVAILABLE: 'COPY_NOT_AVAILABLE',
+  COPY_OF_OTHER_BOOK: 'COPY_OF_OTHER_BOOK',
+  NO_AVAILABLE_COPY: 'NO_AVAILABLE_COPY',
+  LOAN_LIMIT_REACHED: 'LOAN_LIMIT_REACHED',
+  LOAN_STATUS_NOT_ALLOWED: 'LOAN_STATUS_NOT_ALLOWED',
+
+  // User management: only an active account can take over the admin role
+  ADMIN_HANDOVER_TARGET_NOT_ACTIVE: 'ADMIN_HANDOVER_TARGET_NOT_ACTIVE',
+
+  // Forgot password
+  PASSWORD_RESET_ACCOUNT_NOT_FOUND: 'PASSWORD_RESET_ACCOUNT_NOT_FOUND',
+  PASSWORD_RESET_PHONE_SHARED: 'PASSWORD_RESET_PHONE_SHARED',
+  PASSWORD_RESET_CODE_INCORRECT: 'PASSWORD_RESET_CODE_INCORRECT',
+  PASSWORD_RESET_CODE_EXPIRED: 'PASSWORD_RESET_CODE_EXPIRED',
+  PASSWORD_RESET_SESSION_EXPIRED: 'PASSWORD_RESET_SESSION_EXPIRED',
+} as const;
+
+export type BusinessErrorCode = (typeof BusinessErrorCode)[keyof typeof BusinessErrorCode];

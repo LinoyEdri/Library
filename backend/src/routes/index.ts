@@ -1,0 +1,32 @@
+import { Router } from 'express';
+import healthRouter from './health.route.js';
+import docsRouter from './docs.route.ts';
+import authRouter from './auth.route.ts';
+import usersRouter from './users.route.ts';
+import authorsRouter from './authors.route.ts';
+import publishersRouter from './publishers.route.ts';
+import categoriesRouter from './categories.route.ts';
+import booksRouter from './books.route.ts';
+import bookCopiesRouter from './book-copies.route.ts';
+import membersRouter from './members.route.ts';
+import settingsRouter from './settings.route.ts';
+import loansRouter from './loans.route.ts';
+import dashboardRouter from './dashboard.route.ts';
+import auditLogsRouter from './audit-logs.route.ts';
+
+export const apiRouter = Router();
+
+apiRouter.use('/health', healthRouter);
+apiRouter.use('/docs', docsRouter);
+apiRouter.use('/auth', authRouter);
+apiRouter.use('/users', usersRouter);
+apiRouter.use('/authors', authorsRouter);
+apiRouter.use('/publishers', publishersRouter);
+apiRouter.use('/categories', categoriesRouter);
+apiRouter.use('/books', booksRouter);
+apiRouter.use('/book-copies', bookCopiesRouter);
+apiRouter.use('/members', membersRouter);
+apiRouter.use('/settings', settingsRouter);
+apiRouter.use('/loans', loansRouter);
+apiRouter.use('/dashboard', dashboardRouter);
+apiRouter.use('/audit-logs', auditLogsRouter);
