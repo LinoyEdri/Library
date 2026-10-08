@@ -15,7 +15,7 @@ export function TimeRemainingIndicator({
   isRunningOut,
   isExpired,
 }: TimeRemainingIndicatorProps) {
-  const color = isExpired ? 'error.main' : isRunningOut ? 'warning.main' : 'text.secondary';
+  const color = isExpired ? 'error.main' : isRunningOut ? 'warning.dark' : 'text.secondary';
 
   return (
     <Box

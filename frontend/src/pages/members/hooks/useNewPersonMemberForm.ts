@@ -24,7 +24,6 @@ const emptyNewPersonValues: NewPersonFormInput = {
   address: {
     street: '',
     houseNumber: '',
-    apartmentOrUnit: '',
     city: '',
   },
 };

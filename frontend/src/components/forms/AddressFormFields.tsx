@@ -57,6 +57,7 @@ export function AddressFormFields<FormValues extends FieldValues, SubmittedValue
           control={control}
           name={'address.apartmentOrUnit' as Path<FormValues>}
           label={addressFields.apartmentOrUnit}
+          emptyAsUndefined
         />
 
         <FormTextField

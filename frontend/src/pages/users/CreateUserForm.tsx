@@ -4,6 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Role } from '@library/shared';
+import { ConfirmActionDialog } from '../../components/feedback/ConfirmActionDialog';
 import { AddressFormFields } from '../../components/forms/AddressFormFields';
 import { FormActions } from '../../components/forms/FormActions';
 import { FormTextField } from '../../components/forms/FormTextField';
@@ -106,6 +107,15 @@ export function CreateUserForm() {
       <FormActions
         isSaving={createForm.isSaving}
         cancelPath={RoutePaths.USERS}
+      />
+
+      <ConfirmActionDialog
+        isOpen={createForm.isAdminHandoverWarningOpen}
+        title={texts.adminHandoverTitle}
+        message={texts.adminHandoverWarning(createForm.newAdminName)}
+        isConfirming={createForm.isSaving}
+        onConfirm={createForm.confirmAdminHandover}
+        onCancel={createForm.cancelAdminHandover}
       />
     </Stack>
   );

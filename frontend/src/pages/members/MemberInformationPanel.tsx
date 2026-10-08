@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import type { MemberResponse } from '@library/shared';
 import { InformationRow } from '../../components/data-display/InformationRow';
 import { HebrewTexts } from '../../constants/hebrew-texts';
+import { formatStreetAddress } from '../../utils/format-street-address';
 import { formatDateTime } from '../../utils/format-date-time';
 
 const { members: texts, addressFields } = HebrewTexts;
@@ -62,7 +63,7 @@ export function MemberInformationPanel({ member }: { member: MemberResponse }) {
 
           <InformationRow
             label={addressFields.street}
-            value={`${address.street} ${address.houseNumber}, ${addressFields.apartmentOrUnit} ${address.apartmentOrUnit}`}
+            value={formatStreetAddress(address)}
           />
 
           <InformationRow

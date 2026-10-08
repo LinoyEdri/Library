@@ -43,7 +43,7 @@ export function StaffDashboardView({
         <StatCard
           label={texts.pendingReturns}
           value={statistics.pendingReturns}
-          highlightColor={statistics.pendingReturns > 0 ? 'warning.main' : undefined}
+          highlightColor={statistics.pendingReturns > 0 ? 'warning.dark' : undefined}
           icon={<AssignmentReturnIcon fontSize="large" />}
         />
 

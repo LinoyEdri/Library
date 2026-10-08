@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
-// Centered spinner shown while the logged-in user is being loaded
+// Centered spinner shown while the logged-in user or a page outside the app layout is loading
 export function FullPageLoader() {
   return (
     <Box

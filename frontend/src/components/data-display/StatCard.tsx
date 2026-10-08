@@ -11,7 +11,7 @@ type StatCardProps = {
   // Small line under the number, e.g. "out of 5 allowed"
   caption?: string;
   // Highlights the number, e.g. red when there are overdue loans
-  highlightColor?: 'error.main' | 'warning.main';
+  highlightColor?: 'error.main' | 'warning.dark';
 };
 
 // One number on a dashboard, with its label and icon

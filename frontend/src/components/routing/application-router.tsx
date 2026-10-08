@@ -8,31 +8,33 @@ import { HomeRedirect } from './HomeRedirect';
 import { RedirectIfAuthenticated } from './RedirectIfAuthenticated';
 import { RequireAuthentication } from './RequireAuthentication';
 import { RequirePermission } from './RequirePermission';
-import { LoginPage } from '../../pages/authentication/LoginPage';
-import { RegisterPage } from '../../pages/authentication/RegisterPage';
-import { ForgotPasswordPage } from '../../pages/authentication/ForgotPasswordPage';
-import { ResetPasswordPage } from '../../pages/authentication/ResetPasswordPage';
-import { DashboardPage } from '../../pages/dashboard/DashboardPage';
-import { NotFoundPage } from '../../pages/errors/NotFoundPage';
-import { UnauthorizedPage } from '../../pages/errors/UnauthorizedPage';
-import { AuditLogsPage } from '../../pages/audit-logs/AuditLogsPage';
-import { ProfilePage } from '../../pages/profile/ProfilePage';
-import { AuthorsPage } from '../../pages/catalog/AuthorsPage';
-import { BookDetailsPage } from '../../pages/books/BookDetailsPage';
-import { BookFormPage } from '../../pages/books/BookFormPage';
-import { BooksCatalogPage } from '../../pages/books/BooksCatalogPage';
-import { MemberDetailsPage } from '../../pages/members/MemberDetailsPage';
-import { MemberFormPage } from '../../pages/members/MemberFormPage';
-import { MembersListPage } from '../../pages/members/MembersListPage';
-import { UserDetailsPage } from '../../pages/users/UserDetailsPage';
-import { UserFormPage } from '../../pages/users/UserFormPage';
-import { UsersListPage } from '../../pages/users/UsersListPage';
-import { SettingsPage } from '../../pages/settings/SettingsPage';
-import { LoanDetailsPage } from '../../pages/loans/LoanDetailsPage';
-import { LoansListPage } from '../../pages/loans/LoansListPage';
-import { CatalogSectionLayout } from '../../pages/catalog/CatalogSectionLayout';
-import { CategoriesPage } from '../../pages/catalog/CategoriesPage';
-import { PublishersPage } from '../../pages/catalog/PublishersPage';
+import {
+  AuditLogsPage,
+  AuthorsPage,
+  BookDetailsPage,
+  BookFormPage,
+  BooksCatalogPage,
+  CatalogSectionLayout,
+  CategoriesPage,
+  DashboardPage,
+  ForgotPasswordPage,
+  LoanDetailsPage,
+  LoansListPage,
+  LoginPage,
+  MemberDetailsPage,
+  MemberFormPage,
+  MembersListPage,
+  NotFoundPage,
+  ProfilePage,
+  PublishersPage,
+  RegisterPage,
+  ResetPasswordPage,
+  SettingsPage,
+  UnauthorizedPage,
+  UserDetailsPage,
+  UserFormPage,
+  UsersListPage,
+} from './lazy-pages';
 
 // One page inside the app layout, guarded by permissions and shown in the breadcrumbs
 const createProtectedPageRoute = (

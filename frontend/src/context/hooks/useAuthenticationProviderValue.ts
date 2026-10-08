@@ -7,6 +7,7 @@ import { useNotification } from '../../hooks/useNotification';
 import { accessTokenStorage } from '../../services/access-token-storage';
 import { setExpiredSessionHandler } from '../../services/api-client';
 import { authenticationApi } from '../../services/authentication.api';
+import { isServerUnavailableError } from '../../utils/is-server-unavailable-error';
 import type { AuthenticationContextValue } from '../authentication-context';
 
 const CURRENT_USER_CACHE_MILLISECONDS = 5 * 60 * 1000;
@@ -68,13 +69,36 @@ export const useAuthenticationProviderValue = (): AuthenticationContextValue => 
     });
   }, [clearSession, showNotification]);
 
+  const isServerUnavailable =
+    hasAccessToken && !currentUserQuery.data && isServerUnavailableError(currentUserQuery.error);
+
+  const { refetch: refetchCurrentUser } = currentUserQuery;
+
+  const retryLoadingCurrentUser = useCallback(() => {
+    void refetchCurrentUser();
+  }, [refetchCurrentUser]);
+
   return useMemo(
     () => ({
       currentUser: hasAccessToken ? (currentUserQuery.data ?? null) : null,
       isLoadingCurrentUser: hasAccessToken && currentUserQuery.isPending,
       login,
       logout,
+      endSessionLocally: clearSession,
+      isServerUnavailable,
+      isRetryingCurrentUser: currentUserQuery.isFetching,
+      retryLoadingCurrentUser,
     }),
-    [hasAccessToken, currentUserQuery.data, currentUserQuery.isPending, login, logout],
+    [
+      hasAccessToken,
+      currentUserQuery.data,
+      currentUserQuery.isPending,
+      currentUserQuery.isFetching,
+      login,
+      logout,
+      clearSession,
+      isServerUnavailable,
+      retryLoadingCurrentUser,
+    ],
   );
 };

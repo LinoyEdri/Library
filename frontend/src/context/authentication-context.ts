@@ -6,6 +6,12 @@ export interface AuthenticationContextValue {
   isLoadingCurrentUser: boolean;
   login: (credentials: LoginInput) => Promise<SafeUserResponse>;
   logout: () => Promise<void>;
+  // Forgets the session on this device without calling the server (e.g. after handing over the admin role)
+  endSessionLocally: () => void;
+  // The saved session could not be checked because the server is unreachable
+  isServerUnavailable: boolean;
+  isRetryingCurrentUser: boolean;
+  retryLoadingCurrentUser: () => void;
 }
 
 // Logged-in user and login/logout actions, provided by AuthenticationProvider

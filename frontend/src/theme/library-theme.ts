@@ -18,7 +18,8 @@ export const libraryTheme = createTheme({
   palette: {
     primary: { main: brandColors.deepNavy },
     secondary: { main: brandColors.forestGreen },
-    warning: { main: brandColors.mutedGold },
+    // Gold is light: text on gold is navy (white fails contrast); gold text on white uses warning.dark
+    warning: { main: brandColors.mutedGold, contrastText: brandColors.deepNavy },
     background: { default: brandColors.ivoryBackground, paper: brandColors.surfaceWhite },
     text: { primary: brandColors.textPrimary, secondary: brandColors.textSecondary },
   },
@@ -39,6 +40,19 @@ export const libraryTheme = createTheme({
   shape: { borderRadius: 10 },
 
   components: {
+    // Outlined gold chips (e.g. the member role) show gold text on white: use the darker gold
+    MuiChip: {
+      variants: [
+        {
+          props: { variant: 'outlined', color: 'warning' },
+          style: ({ theme }) => ({
+            color: theme.palette.warning.dark,
+            borderColor: theme.palette.warning.dark,
+          }),
+        },
+      ],
+    },
+
     MuiCard: {
       defaultProps: { elevation: 0 },
       styleOverrides: {

@@ -8,6 +8,7 @@ import type { ManagedUserResponse } from '@library/shared';
 import { InformationRow } from '../../components/data-display/InformationRow';
 import { RoleChip } from '../../components/data-display/RoleChip';
 import { HebrewTexts } from '../../constants/hebrew-texts';
+import { formatStreetAddress } from '../../utils/format-street-address';
 import { buildMemberDetailsPath } from '../../utils/build-member-paths';
 import { formatDateTime } from '../../utils/format-date-time';
 
@@ -125,7 +126,7 @@ export function UserInformationPanel({ user }: { user: ManagedUserResponse }) {
 
           <InformationRow
             label={addressFields.street}
-            value={`${address.street} ${address.houseNumber}, ${addressFields.apartmentOrUnit} ${address.apartmentOrUnit}`}
+            value={formatStreetAddress(address)}
           />
 
           <InformationRow

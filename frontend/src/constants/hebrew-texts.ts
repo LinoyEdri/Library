@@ -111,7 +111,7 @@ export const HebrewTexts = {
     phoneNumber: 'טלפון',
     street: 'רחוב',
     houseNumber: 'מספר בית',
-    apartmentOrUnit: 'דירה',
+    apartmentOrUnit: 'דירה (לא חובה)',
     city: 'עיר',
     postalCode: 'מיקוד (לא חובה)',
     currentPassword: 'סיסמה נוכחית',
@@ -347,6 +347,11 @@ export const HebrewTexts = {
     userDisabled: 'החשבון הושבת',
     userReactivated: 'החשבון הופעל מחדש',
     lastActiveAdmin: 'לא ניתן להסיר את מנהל המערכת הפעיל האחרון',
+    adminHandoverTitle: 'העברת ניהול המערכת',
+    adminHandoverWarning: (newAdminName: string) =>
+      `למערכת יש מנהל אחד בלבד. אם תמשיכו, תפקיד מנהל המערכת יועבר אל ${newAdminName}, החשבון שלכם יושבת ותנותקו מהמערכת. אם החשבון יופעל מחדש בעתיד, הוא יחזור כחשבון אורח בלבד.`,
+    adminHandedOver: 'ניהול המערכת הועבר. החשבון שלך הושבת והתנתקת מהמערכת.',
+    adminHandoverTargetNotActive: 'רק חשבון פעיל יכול לקבל את תפקיד מנהל המערכת',
     sameRole: 'למשתמש כבר יש תפקיד זה',
     userNotFound: 'המשתמש לא נמצא',
     disabledAccountNote: 'החשבון מושבת: המשתמש אינו יכול להתחבר למערכת',
@@ -377,7 +382,9 @@ export const HebrewTexts = {
   addressFields: {
     street: 'רחוב',
     houseNumber: 'מספר בית',
-    apartmentOrUnit: 'דירה',
+    apartmentOrUnit: 'דירה (לא חובה)',
+    // Before the apartment number in a written address: "הרצל 12, דירה 4"
+    apartmentPrefix: 'דירה',
     city: 'עיר',
     postalCode: 'מיקוד (לא חובה)',
   },
@@ -502,6 +509,7 @@ export const HebrewTexts = {
     reason: 'סיבה',
     source: 'מקור',
     channel: 'ערוץ אימות',
+    newAdminUserId: 'מנהל המערכת החדש',
   } as Record<string, string>,
 
   // Hebrew for the reasons and sources stored in audit entries' additional context
@@ -518,6 +526,7 @@ export const HebrewTexts = {
     PASSWORD_RESET: 'איפוס סיסמה באמצעות קוד אימות',
     EMAIL: 'אימייל',
     SMS: 'SMS',
+    ADMIN_ROLE_HANDED_OVER: 'העברת ניהול המערכת למשתמש אחר',
     existingUser: 'קישור משתמש קיים',
     newPerson: 'רישום אדם חדש',
   } as Record<string, string>,

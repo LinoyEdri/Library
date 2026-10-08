@@ -16,6 +16,10 @@ export const setExpiredSessionHandler = (handler: () => void): void => {
   handleExpiredSession = handler;
 };
 
+// Every API error answer is { success: false, ... }; the dev proxy answers an empty 500 instead
+const isApiErrorEnvelope = (data: unknown): boolean =>
+  typeof data === 'object' && data !== null && 'success' in data;
+
 // Vite proxies /api to the backend on port 3001
 const apiClient = axios.create({ baseURL: '/api' });
 
@@ -35,6 +39,14 @@ apiClient.interceptors.response.use(
   (error) => {
     if (!axios.isAxiosError<ApiErrorResponse>(error) || !error.response) {
       return Promise.reject(new ApiRequestError('Network error', NETWORK_ERROR_STATUS_CODE));
+    }
+
+    // A server error without our envelope came from the proxy, not the API: the backend is down
+    if (
+      error.response.status >= StatusCodes.INTERNAL_SERVER_ERROR &&
+      !isApiErrorEnvelope(error.response.data)
+    ) {
+      return Promise.reject(new ApiRequestError('Server unreachable', NETWORK_ERROR_STATUS_CODE));
     }
 
     const { status, data, config } = error.response;
